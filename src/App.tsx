@@ -13,6 +13,9 @@ function App() {
   const [csvData, setCsvData] = useState("");
   const [response, setResponse] = useState("");
 
+  const prompt: string =
+    "Give me an analysis of the following data. Make sure to break it down in three different paragraphs; introduction, overview and conclusion: ";
+
   const handleAccountNameChange = (event: any) => {
     setAccountNameValue(event.target.value);
   };
@@ -76,7 +79,7 @@ function App() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message: csvData }),
+      body: JSON.stringify({ message: prompt + csvData }),
     });
     const data = await res.json();
     setResponse(data.content);
@@ -136,12 +139,6 @@ function App() {
       {progress.started && <progress max="100" value={progress.pc}></progress>}
       {msg && <span>{msg}</span>}
       <button onClick={handleResponse}>Get Response</button>
-      {csvData && (
-        <>
-          <h3>CSV Data:</h3>
-          <pre>{csvData}</pre>
-        </>
-      )}
       {response && (
         <>
           <h3>Response from ChatGPT:</h3>
