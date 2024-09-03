@@ -4,6 +4,108 @@ import logo from "/logo.png";
 import "./App.css";
 
 function App() {
+  const [file, setFile] = useState<File | null>(null);
+  const [progress, setProgress] = useState({ started: false, pc: 0 });
+  const [msg, setMsg] = useState<string | null>(null);
+  const [csvData, setCsvData] = useState("");
+  const [response, setResponse] = useState("");
+
+  const prompt: string =
+    "Geef een analyse over de volgende data. Deel deze analyse in 3 paragrafen op: introductie, analyse en conclusie. Zet ook de titel er netjes boven.";
+
+  async function handleUpload() {
+    if (!file) {
+      setMsg("No file selected");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setMsg("Uploading...");
+    setProgress((prevState) => ({
+      ...prevState,
+      started: true,
+    }));
+
+    axios
+      .post("http://httpbin.org/post", formData, {
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded / progressEvent.total) * 100
+            );
+            setProgress((prevState) => ({
+              ...prevState,
+              pc: percentCompleted,
+            }));
+          }
+        },
+        headers: {
+          "Custom-Header": "Value",
+        },
+      })
+      .then((res) => {
+        setMsg("Upload successful");
+        console.log(res.data.files.file);
+        setCsvData(res.data.files.file);
+      })
+      .catch((err) => {
+        setMsg("Upload failed");
+        console.log(err);
+      });
+    const res = await fetch("http://localhost:3001/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: prompt + csvData }),
+    });
+    const data = await res.json();
+    setResponse(data.content);
+  }
+
+  return (
+    <div className="container">
+      <div>
+        <a href="https://www.google.com/" target="_blank">
+          <img src={logo} className="logo" alt="Geen Gedoe Google Ads logo" />
+        </a>
+      </div>
+      <label>{`Bestanden om te analyseren:`}</label>
+      <input
+        type="file"
+        onChange={(e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            setFile(e.target.files[0]);
+          } else {
+            setFile(null);
+          }
+        }}
+      />
+      <button onClick={handleUpload}>Upload</button>
+      {progress.started && <progress max="100" value={progress.pc}></progress>}
+      {msg && <span>{msg}</span>}
+      {response && (
+        <>
+          <h3>Response from ChatGPT:</h3>
+          <pre>{response}</pre>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default App;
+
+/* 
+import { useState } from "react";
+import axios from "axios";
+import logo from "/logo.png";
+import "./App.css";
+
+function App() {
+  
   const [accountNameValue, setAccountNameValue] = useState("");
   const [startingDateValue, setStartingDateValue] = useState("");
   const [endingDateValue, setEndingDateValue] = useState("");
@@ -14,7 +116,7 @@ function App() {
   const [response, setResponse] = useState("");
 
   const prompt: string =
-    "Give me an analysis of the following data. Make sure to break it down in three different paragraphs; introduction, overview and conclusion: ";
+    "Geef een analyse over de volgende data. Deel deze analyse in 3 paragrafen op: introductie, analyse en conclusie. Zet ook de titel er netjes boven.";
 
   const handleAccountNameChange = (event: any) => {
     setAccountNameValue(event.target.value);
@@ -125,6 +227,7 @@ function App() {
           Generate rapport
         </button>
       </form>
+
       <input
         type="file"
         onChange={(e) => {
@@ -149,4 +252,5 @@ function App() {
   );
 }
 
-export default App;
+export default App; 
+*/
