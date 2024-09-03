@@ -11,7 +11,7 @@ function App() {
   const [progress, setProgress] = useState({ started: false, pc: 0 });
   const [msg, setMsg] = useState<string | null>(null);
   const [csvData, setCsvData] = useState("");
-  //const [response, setResponse] = useState("")
+  const [response, setResponse] = useState("");
 
   const handleAccountNameChange = (event: any) => {
     setAccountNameValue(event.target.value);
@@ -70,6 +70,18 @@ function App() {
       });
   }
 
+  const handleResponse = async () => {
+    const res = await fetch("http://localhost:3001/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: csvData }),
+    });
+    const data = await res.json();
+    setResponse(data.content);
+  };
+
   return (
     <div className="container">
       <div>
@@ -123,11 +135,18 @@ function App() {
       <button onClick={handleUpload}>Upload</button>
       {progress.started && <progress max="100" value={progress.pc}></progress>}
       {msg && <span>{msg}</span>}
+      <button onClick={handleResponse}>Get Response</button>
       {csvData && (
-        <div className="csv-data">
+        <>
           <h3>CSV Data:</h3>
           <pre>{csvData}</pre>
-        </div>
+        </>
+      )}
+      {response && (
+        <>
+          <h3>Response from ChatGPT:</h3>
+          <pre>{response}</pre>
+        </>
       )}
     </div>
   );
