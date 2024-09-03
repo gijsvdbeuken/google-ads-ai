@@ -10,6 +10,8 @@ function App() {
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState({ started: false, pc: 0 });
   const [msg, setMsg] = useState<string | null>(null);
+  const [csvData, setCsvData] = useState("");
+  //const [response, setResponse] = useState("")
 
   const handleAccountNameChange = (event: any) => {
     setAccountNameValue(event.target.value);
@@ -59,7 +61,8 @@ function App() {
       })
       .then((res) => {
         setMsg("Upload successful");
-        console.log(res.data);
+        console.log(res.data.files.file);
+        setCsvData(res.data.files.file);
       })
       .catch((err) => {
         setMsg("Upload failed");
@@ -120,6 +123,12 @@ function App() {
       <button onClick={handleUpload}>Upload</button>
       {progress.started && <progress max="100" value={progress.pc}></progress>}
       {msg && <span>{msg}</span>}
+      {csvData && (
+        <div className="csv-data">
+          <h3>CSV Data:</h3>
+          <pre>{csvData}</pre>
+        </div>
+      )}
     </div>
   );
 }
