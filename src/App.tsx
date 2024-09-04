@@ -6,15 +6,20 @@ import logo from "/logo.png";
 import "./App.css";
 
 function App() {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
-  const [csvData, setCsvData] = useState("");
+  const [fullPrompt, setFullPrompt] = useState<string | null>(null);
   const [response, setResponse] = useState("");
 
   const [isFinished, setIsFinished] = useState<boolean>(false);
 
-  const prompt: string =
-    "Geef een analyse over de volgende data. Deel deze analyse in 3 paragrafen op: introductie, analyse en conclusie. Zet ook de titel er netjes boven.";
+  const [companyName, setCompanyName] = useState<string | null>(null);
+
+  const handleCompanyName = (event: any) => {
+    setCompanyName(event.target.value);
+  };
+
+  const prompt: string = `Geef een analyse over het bedrijf "${companyName}". Deel deze analyse in 3 paragrafen op: introductie, analyse en conclusie. Zet ook de titel er netjes boven.`;
 
   const generateWordFile = (text: string) => {
     const doc = new Document({
@@ -31,47 +36,53 @@ function App() {
     });
 
     Packer.toBlob(doc).then((blob) => {
-      saveAs(blob, "document.docx");
+      saveAs(blob, "ChatGPT-campagne-analyze.docx");
     });
   };
 
   async function handleUpload() {
-    if (!file) {
-      setUploadStatus("No file selected");
+    if (files.length === 0) {
+      setUploadStatus("No files selected");
       return;
     }
 
     const formData = new FormData();
-    formData.append("file", file);
+    files.forEach((file) => formData.append("files", file));
 
     setUploadStatus("Uploading...");
 
-    axios
-      .post("http://httpbin.org/post", formData, {
+    try {
+      // Stuur de bestanden naar de server (of verwerk ze op een andere manier)
+      const res = await axios.post("http://httpbin.org/post", formData, {
         headers: {
           "Custom-Header": "Value",
         },
-      })
-      .then((res) => {
-        console.log(res.data.files.file);
-        setCsvData(res.data.files.file);
-        setUploadStatus("Connecting to server...");
-      })
-      .catch((err) => {
-        setUploadStatus("Upload failed");
-        console.log(err);
       });
-    const res = await fetch("http://localhost:3001/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message: prompt + csvData }),
-    });
-    const data = await res.json();
-    setResponse(data.content);
-    setUploadStatus("Response retrieved successfully!");
-    setIsFinished(true);
+      console.log(res.data.files);
+
+      // Combineer de tekst van alle bestanden
+      let combinedText = "";
+      for (const file of files) {
+        combinedText += await file.text();
+      }
+      setUploadStatus("Connecting to server...");
+
+      const response = await fetch("http://localhost:3001/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: prompt + combinedText }),
+      });
+      const data = await response.json();
+      setResponse(data.content);
+      setUploadStatus("Response retrieved successfully!");
+      setIsFinished(true);
+      setFullPrompt(prompt + combinedText);
+    } catch (err) {
+      setUploadStatus("Upload failed" + err);
+      console.log(err);
+    }
   }
 
   useEffect(() => {
@@ -87,29 +98,30 @@ function App() {
           <img src={logo} className="logo" alt="Geen Gedoe Google Ads logo" />
         </a>
       </div>
-      <label>{`Bestanden om te analyseren:`}</label>
+      <label>Datasets</label>
       <input
         type="file"
+        multiple
         onChange={(e) => {
-          if (e.target.files && e.target.files.length > 0) {
-            setFile(e.target.files[0]);
-          } else {
-            setFile(null);
+          if (e.target.files) {
+            setFiles(Array.from(e.target.files));
           }
         }}
       />
+      <label>Bedrijfsnaam</label>
+      <input onChange={handleCompanyName}></input>
       <button onClick={handleUpload}>Upload</button>
       {uploadStatus && (
         <span className={isFinished ? "finished" : "notFinished"}>
           {uploadStatus}
         </span>
       )}
-      {/*response && (
+      {fullPrompt && (
         <>
-          <h3>Response from ChatGPT:</h3>
-          <pre>{response}</pre>
+          <h3>Question asked:</h3>
+          <pre>{fullPrompt}</pre>
         </>
-      )*/}
+      )}
     </div>
   );
 }
