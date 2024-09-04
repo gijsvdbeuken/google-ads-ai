@@ -1,57 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import { Document, Packer, Paragraph, TextRun } from "docx";
+import { saveAs } from "file-saver";
 import logo from "/logo.png";
 import "./App.css";
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState({ started: false, pc: 0 });
-  const [msg, setMsg] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [csvData, setCsvData] = useState("");
   const [response, setResponse] = useState("");
+
+  const [isFinished, setIsFinished] = useState<boolean>(false);
 
   const prompt: string =
     "Geef een analyse over de volgende data. Deel deze analyse in 3 paragrafen op: introductie, analyse en conclusie. Zet ook de titel er netjes boven.";
 
+  const generateWordFile = (text: string) => {
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [new TextRun(text)],
+            }),
+          ],
+        },
+      ],
+    });
+
+    Packer.toBlob(doc).then((blob) => {
+      saveAs(blob, "document.docx");
+    });
+  };
+
   async function handleUpload() {
     if (!file) {
-      setMsg("No file selected");
+      setUploadStatus("No file selected");
       return;
     }
 
     const formData = new FormData();
     formData.append("file", file);
 
-    setMsg("Uploading...");
-    setProgress((prevState) => ({
-      ...prevState,
-      started: true,
-    }));
+    setUploadStatus("Uploading...");
 
     axios
       .post("http://httpbin.org/post", formData, {
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded / progressEvent.total) * 100
-            );
-            setProgress((prevState) => ({
-              ...prevState,
-              pc: percentCompleted,
-            }));
-          }
-        },
         headers: {
           "Custom-Header": "Value",
         },
       })
       .then((res) => {
-        setMsg("Upload successful");
         console.log(res.data.files.file);
         setCsvData(res.data.files.file);
+        setUploadStatus("Connecting to server...");
       })
       .catch((err) => {
-        setMsg("Upload failed");
+        setUploadStatus("Upload failed");
         console.log(err);
       });
     const res = await fetch("http://localhost:3001/chat", {
@@ -63,7 +70,15 @@ function App() {
     });
     const data = await res.json();
     setResponse(data.content);
+    setUploadStatus("Response retrieved successfully!");
+    setIsFinished(true);
   }
+
+  useEffect(() => {
+    if (response) {
+      generateWordFile(response);
+    }
+  }, [response]);
 
   return (
     <div className="container">
@@ -84,14 +99,17 @@ function App() {
         }}
       />
       <button onClick={handleUpload}>Upload</button>
-      {progress.started && <progress max="100" value={progress.pc}></progress>}
-      {msg && <span>{msg}</span>}
-      {response && (
+      {uploadStatus && (
+        <span className={isFinished ? "finished" : "notFinished"}>
+          {uploadStatus}
+        </span>
+      )}
+      {/*response && (
         <>
           <h3>Response from ChatGPT:</h3>
           <pre>{response}</pre>
         </>
-      )}
+      )*/}
     </div>
   );
 }
