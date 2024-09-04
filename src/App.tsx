@@ -1,24 +1,21 @@
 import { useState, useEffect } from "react";
-import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
+import { Document, Packer, Paragraph, TextRun } from "docx";
 import { saveAs } from "file-saver";
 import logo from "/logo.png";
 import "./App.css";
+SVGAnimateTransformElement;
 
 function App() {
   const [companyName, setCompanyName] = useState<string | null>(null);
   const [campaignRapport, setCampaignRapport] = useState<File[]>([]);
   const [adRapports, setAdRapports] = useState<File[]>([]);
-  const [fileName, setFileName] = useState<string | null>(null);
+  //const [fileName, setFileName] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [response, setResponse] = useState("");
 
-  /*const introductionParagraph: string = `Bij deze sturen wij je de maandelijkse rapportage van de Google Ads optimalisatie
-  van de lopende campagne. Het is van belang om eerst enkele statistieken in kaart te
-  brengen die ons een idee geven van hoe de campagnes draaien.`;*/
+  const prompt: string = `Geef eerst onder elkaar het aantal Clicks de CTR, de Kosten, de CPC, het Aantal Conversies en de Kosten per Conversie. Schrijf daarna één paragraaf over de statistieken van alle campagnes bij elkaar opgeteld. zet GEEN titel boven de paragraaf, ik wil enkel de inhoudelijke paragraaftekst.`;
 
-  const prompt: string = `Geef een analyse over het bedrijf "${companyName}". Deel deze op in de volgende paragrafen; "Inleiding" en "Statistieken". Zorg ervoor dat je het totaal aantal clicks, CTR, kosten, CPC, het aantal conversies en de kosten per conversie van de campagnes bij elkaar opgeteld in de "Statistieken" paragraaf duidelijk onder elkaar opbreekt.`;
-
-  const campaignPrompt: string = `Geef een analyze over "${fileName}" van het bedrijf "${companyName}". Geef eerst de naam van de campagne, en deel daarna de analyze op in de paragrafen "Leeftijden", "Geslacht", "Apparaten", "Dag en tijd" en "Doelgroepen". Dit doe je daarna ook met de andere campagnes. Wanneer je iets niet weet of ergens geen (duidelijke) informatie over hebt, geef je dit ook aan bij de betreffende paragraaf. `;
+  const campaignPrompt: string = `Geef een analyze over de campagnes van het bedrijf "${companyName}". Geef eerst de naam van de campagne, en deel daarna de analyze op in de paragrafen "Leeftijden", "Geslacht", "Apparaten", "Dag en tijd" en "Doelgroepen". Dit doe je daarna ook met de andere campagnes. Wanneer je iets niet weet of ergens geen (duidelijke) informatie over hebt, geef je dit ook aan bij de betreffende paragraaf. Gebruik GEEN Markdown voor het aankondigen van titels. gebruik voor alles gewoon 'plain' tekst, maar zet de paragraaf zelf wel op een nieuwe regel.`;
 
   const handleCompanyName = (event: any) => {
     setCompanyName(event.target.value);
@@ -33,15 +30,112 @@ function App() {
           properties: {},
           children: [
             new Paragraph({
-              text: "Google Ads Optimalisatie",
-              heading: HeadingLevel.TITLE,
+              children: [
+                new TextRun({
+                  text: "Google Ads Optimalisatie",
+                  bold: true,
+                  size: 48,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `${companyName}`,
+                  bold: true,
+                  size: 24,
+                }),
+              ],
+            }),
+            new Paragraph({}),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Geen Gedoe - Media & Marketing - 01-01-2025",
+                  size: 24,
+                }),
+              ],
+            }),
+            new Paragraph({}),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Bij deze sturen wij je de maandelijkse rapportage van de Google Ads optimalisatie van de lopende campagne. Het is van belang om eerst enkele statistieken in kaart te brengen die ons een idee geven van hoe de campagnes draaien.`,
+                  size: 24,
+                }),
+              ],
+            }),
+            new Paragraph({}),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Inleiding",
+                  bold: true,
+                  size: 24,
+                }),
+              ],
             }),
             ...paragraphs.flatMap((paragraph) => [
               new Paragraph({
-                children: [new TextRun(paragraph)],
+                children: [
+                  new TextRun({
+                    text: paragraph,
+                    size: 24,
+                  }),
+                ],
               }),
               new Paragraph({ text: "" }),
             ]),
+            new Paragraph({}),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Leeftijden",
+                  bold: true,
+                  size: 24,
+                }),
+              ],
+            }),
+            new Paragraph({}),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Geslacht",
+                  bold: true,
+                  size: 24,
+                }),
+              ],
+            }),
+            new Paragraph({}),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Apparaten",
+                  bold: true,
+                  size: 24,
+                }),
+              ],
+            }),
+            new Paragraph({}),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Dag en tijd",
+                  bold: true,
+                  size: 24,
+                }),
+              ],
+            }),
+            new Paragraph({}),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Doelgroepen",
+                  bold: true,
+                  size: 24,
+                }),
+              ],
+            }),
           ],
         },
       ],
@@ -81,13 +175,13 @@ function App() {
         campaignRapport,
         prompt
       );
-      setFileName(campaignRapport.map((file) => file.name).join(", ")); // indien nodig
+      //setFileName(campaignRapport.map((file) => file.name).join(", ")); // indien nodig
 
       const analyzedAdRapport = await combineTextAndAnalyze(
         adRapports,
         campaignPrompt
       );
-      setFileName(adRapports.map((file) => file.name).join(", ")); // indien nodig
+      //setFileName(adRapports.map((file) => file.name).join(", ")); // indien nodig
 
       setResponse(analyzedCampagne.content + analyzedAdRapport.content);
       setIsUploading(false);

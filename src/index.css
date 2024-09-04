@@ -167,6 +167,7 @@ small {
   color: #faf3ed;
   padding: 15px 10px;
   cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 .finished {
