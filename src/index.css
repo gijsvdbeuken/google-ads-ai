@@ -30,7 +30,9 @@
 @media (prefers-color-scheme: light) {
   :root {
     color: #113676;
-    background-color: #ffffff;
+    background-color: transparent;
+    padding: 0px !important;
+    margin: 0px !important;
   }
   a:hover {
     color: #747bff;
@@ -44,7 +46,7 @@ body {
   margin: 0;
   display: flex;
   place-items: center;
-  min-width: 500px;
+  min-width: auto;
   min-height: 100vh;
 }
 
@@ -56,14 +58,9 @@ form {
   width: 100%;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
 label {
   font-family: "Gilroy";
-  font-weight: 500;
+  font-weight: 600;
   font-size: 16px;
 }
 
@@ -97,15 +94,16 @@ button:hover {
   color: #e74764;
 }
 
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button:disabled {
+  background-color: #041129;
+  color: #faf3ed;
+  cursor: default;
 }
 
 input {
   border: none;
   width: 100%;
-  padding: 10px;
+  padding: 15px;
   margin-bottom: 10px;
   border-radius: 5px;
   font-size: 16px;
@@ -139,39 +137,36 @@ a:hover {
   color: #535bf2;
 }
 
+small {
+  font-family: "Gilroy";
+  font-weight: 500;
+  font-size: 12px;
+  opacity: 0.75;
+  padding: 7.5px 0px 0px 0px;
+}
+
 .container {
   display: flex;
   flex-direction: column;
   padding: 10px;
   border-radius: 10px;
+  min-width: 400px;
   border: 2px solid rgba(255, 255, 255, 0.25);
 }
 
-.dateContainer {
-  width: 100%;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 10px;
-}
-
-.startingDate {
+.dataForm {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  width: 50%;
-}
-
-.endingDate {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 50%;
+  align-items: start;
 }
 
 .fileInput {
-  margin: 10px 10px 0px 0px;
-  padding: 10px 10px 0px 0px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  font-family: "Gilroy";
+  font-weight: 600;
+  color: #faf3ed;
+  padding: 15px 10px;
+  cursor: pointer;
 }
 
 .finished {
@@ -180,4 +175,16 @@ a:hover {
 
 .notFinished {
   color: #e74764 !important;
+}
+
+.inputButton {
+  display: flex;
+  align-items: center;
+  color: #e74764 !important;
+  cursor: pointer;
+  background-color: white;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+  display: none;
 }
