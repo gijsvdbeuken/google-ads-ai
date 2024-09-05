@@ -9,13 +9,12 @@ function App() {
   const [companyName, setCompanyName] = useState<string | null>(null);
   const [campaignRapport, setCampaignRapport] = useState<File[]>([]);
   const [adRapports, setAdRapports] = useState<File[]>([]);
-  //const [fileName, setFileName] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [response, setResponse] = useState("");
 
   const prompt: string = `Geef eerst onder elkaar het aantal Clicks de CTR, de Kosten, de CPC, het Aantal Conversies en de Kosten per Conversie. Schrijf daarna één paragraaf over de statistieken van alle campagnes bij elkaar opgeteld. zet GEEN titel boven de paragraaf, ik wil enkel de inhoudelijke paragraaftekst.`;
 
-  const campaignPrompt: string = `Geef een analyze over de campagnes van het bedrijf "${companyName}". Geef eerst de naam van de campagne, en deel daarna de analyze op in de paragrafen "Leeftijden", "Geslacht", "Apparaten", "Dag en tijd" en "Doelgroepen". Dit doe je daarna ook met de andere campagnes. Wanneer je iets niet weet of ergens geen (duidelijke) informatie over hebt, geef je dit ook aan bij de betreffende paragraaf. Gebruik GEEN Markdown voor het aankondigen van titels. gebruik voor alles gewoon 'plain' tekst, maar zet de paragraaf zelf wel op een nieuwe regel.`;
+  const campaignPrompt: string = `Geef een analyze over de campagnes van het bedrijf "${companyName}". Geef eerst de naam van de campagne, en deel daarna de analyze op in de paragrafen "Leeftijden", "Geslacht", "Apparaten", "Dag en tijd" en "Doelgroepen". Dit doe je daarna ook met de andere campagnes. Wanneer je iets niet weet of ergens geen (duidelijke) informatie over hebt, geef je dit ook aan bij de betreffende paragraaf. Gebruik GEEN Markdown of tekens als ":" voor het aankondigen van titels. gebruik voor alles gewoon 'plain' tekst, maar zet de paragraaf zelf wel één regel onder de titel, zonder witruimte tussen de titel en paragraaf.`;
 
   const handleCompanyName = (event: any) => {
     setCompanyName(event.target.value);
@@ -60,81 +59,42 @@ function App() {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: `Bij deze sturen wij je de maandelijkse rapportage van de Google Ads optimalisatie van de lopende campagne. Het is van belang om eerst enkele statistieken in kaart te brengen die ons een idee geven van hoe de campagnes draaien.`,
-                  size: 24,
-                }),
-              ],
-            }),
-            new Paragraph({}),
-            new Paragraph({
-              children: [
-                new TextRun({
                   text: "Inleiding",
                   bold: true,
                   size: 24,
                 }),
               ],
             }),
-            ...paragraphs.flatMap((paragraph) => [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: paragraph,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-            ]),
             new Paragraph({}),
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "Leeftijden",
-                  bold: true,
+                  text: `Bij deze sturen wij je de maandelijkse rapportage van de Google Ads optimalisatie van de lopende campagne. Het is van belang om eerst enkele statistieken in kaart te brengen die ons een idee geven van hoe de campagnes draaien.`,
                   size: 24,
                 }),
               ],
             }),
             new Paragraph({}),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: "Geslacht",
-                  bold: true,
-                  size: 24,
+
+            ...paragraphs.flatMap((paragraph) => {
+              const isTitle =
+                paragraph === "Leeftijden" ||
+                paragraph === "Geslacht" ||
+                paragraph === "Apparaten" ||
+                paragraph === "Dag en tijd" ||
+                paragraph === "Doelgroepen";
+
+              return [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: paragraph,
+                      bold: isTitle,
+                    }),
+                  ],
                 }),
-              ],
-            }),
-            new Paragraph({}),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: "Apparaten",
-                  bold: true,
-                  size: 24,
-                }),
-              ],
-            }),
-            new Paragraph({}),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: "Dag en tijd",
-                  bold: true,
-                  size: 24,
-                }),
-              ],
-            }),
-            new Paragraph({}),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: "Doelgroepen",
-                  bold: true,
-                  size: 24,
-                }),
-              ],
+                new Paragraph({ text: "" }),
+              ];
             }),
           ],
         },
@@ -175,15 +135,15 @@ function App() {
         campaignRapport,
         prompt
       );
-      //setFileName(campaignRapport.map((file) => file.name).join(", ")); // indien nodig
 
       const analyzedAdRapport = await combineTextAndAnalyze(
         adRapports,
         campaignPrompt
       );
-      //setFileName(adRapports.map((file) => file.name).join(", ")); // indien nodig
 
-      setResponse(analyzedCampagne.content + analyzedAdRapport.content);
+      setResponse(
+        analyzedCampagne.content + "\n\n" + analyzedAdRapport.content
+      );
       setIsUploading(false);
     } catch (err) {
       setIsUploading(false);
