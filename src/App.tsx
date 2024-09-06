@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Document, Packer, Paragraph, TextRun } from "docx";
-import { saveAs } from "file-saver";
+import { rapportGenerator } from "./utilities/RapportGenerator";
+import { dataUploader } from "./utilities/DataUploader";
 import logo from "/logo.png";
 import "./App.css";
 SVGAnimateTransformElement;
@@ -18,167 +18,11 @@ function App() {
 
   const detailedPrompt: string = `Geef een analyze over de volgende campagnes. Geef eerst de naam van de campagne (Campagne: <naam_campagne>), gevolgd door 5 alinea's: "Leeftijden", "Geslacht", "Apparaten", "Dag en Tijd, en "Doelgroepen". Schrijf de alinea telkens ONDER de titel met een regel witruimte er ussenin, en gebruik geen markdown of tekens als ":".`;
 
-  const handleCompanyName = (event: any) => {
-    setCompanyName(event.target.value);
-  };
-
-  const generateWordFile = (text: string) => {
-    const paragraphs = text.split("\n\n");
-
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  font: "Arial",
-                  text: "Google Ads Optimalisatie",
-                  bold: true,
-                  size: 48,
-                  color: "E74764",
-                }),
-              ],
-            }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  font: "Arial",
-                  text: `${companyName}`,
-                  bold: true,
-                  size: 20,
-                  color: "E74764",
-                }),
-              ],
-            }),
-            new Paragraph({}),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  font: "Arial",
-                  text: `Geen Gedoe - Media & Marketing - ${currentDate}`,
-                  size: 20,
-                  color: "113676",
-                }),
-              ],
-            }),
-            new Paragraph({}),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  font: "Arial",
-                  text: "Inleiding",
-                  bold: true,
-                  size: 20,
-                  color: "E74764",
-                }),
-              ],
-            }),
-            new Paragraph({}),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  font: "Arial",
-                  text: `Bij deze sturen wij je de maandelijkse rapportage van de Google Ads optimalisatie van de lopende campagne(s). Het is van belang om eerst enkele statistieken in kaart te brengen die ons een idee geven van hoe de campagnes draaien.`,
-                  size: 20,
-                  color: "113676",
-                }),
-              ],
-            }),
-            new Paragraph({}),
-
-            ...paragraphs.flatMap((paragraph) => {
-              const isTitle =
-                paragraph === "Leeftijden" ||
-                paragraph === "Geslacht" ||
-                paragraph === "Apparaten" ||
-                paragraph === "Dag en Tijd" ||
-                paragraph === "Doelgroepen";
-
-              const isSubTitle =
-                paragraph === "Aantal Clicks:" ||
-                paragraph === "CTR:" ||
-                paragraph === "Kosten:" ||
-                paragraph === "CPC:" ||
-                paragraph === "Aantal Conversies:" ||
-                paragraph === "Kosten per Conversie:";
-
-              return [
-                new Paragraph({
-                  children: [
-                    new TextRun({
-                      font: "Arial",
-                      text: paragraph,
-                      size: 20,
-                      bold: isTitle || isSubTitle,
-                      color: isTitle ? "E74764" : "113676",
-                    }),
-                  ],
-                }),
-                new Paragraph({ text: "" }),
-              ];
-            }),
-          ],
-        },
-      ],
-    });
-
-    Packer.toBlob(doc).then((blob) => {
-      saveAs(blob, "campagne-analyse.docx");
-    });
-  };
-
-  async function handleUpload() {
-    if (campaignData.length === 0) {
-      return;
-    }
-
-    setIsUploading(true);
-
-    try {
-      const combineTextAndAnalyze = async (files: File[], prompt: string) => {
-        let combinedText = "";
-        for (const file of files) {
-          combinedText += await file.text();
-        }
-
-        const response = await fetch("http://localhost:3001/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ message: prompt + combinedText }),
-        });
-
-        return await response.json();
-      };
-
-      const analyzedCampagne = await combineTextAndAnalyze(
-        campaignData,
-        overviewPrompt
-      );
-
-      const analyzedCampaignOne = await combineTextAndAnalyze(
-        campaignData,
-        detailedPrompt
-      );
-
-      setResponse(
-        analyzedCampagne.content + "\n\n" + analyzedCampaignOne.content
-      );
-      setIsUploading(false);
-    } catch (err) {
-      setIsUploading(false);
-      console.log(err);
-    }
-  }
-
   useEffect(() => {
     if (response) {
-      generateWordFile(response);
+      rapportGenerator(response, companyName, currentDate);
     }
-  }, [response]);
+  }, [response, companyName, currentDate]);
 
   return (
     <div className="container">
@@ -187,7 +31,11 @@ function App() {
       </div>
       <div className="dataForm">
         <label>Bedrijfsnaam</label>
-        <input onChange={handleCompanyName}></input>
+        <input
+          onChange={(e) => {
+            setCompanyName(e.target.value);
+          }}
+        ></input>
         <label>Campagne data</label>
         <input
           className="fileInput"
@@ -200,7 +48,18 @@ function App() {
           }}
         ></input>
       </div>
-      <button onClick={handleUpload} disabled={isUploading}>
+      <button
+        onClick={() =>
+          dataUploader(
+            campaignData,
+            overviewPrompt,
+            detailedPrompt,
+            setIsUploading,
+            setResponse
+          )
+        }
+        disabled={isUploading}
+      >
         {isUploading === true
           ? "Verwerken, even geduld..."
           : "Analyze uitvoeren"}
