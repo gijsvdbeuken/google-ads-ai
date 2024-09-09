@@ -2,106 +2,91 @@
 
 ## Voorbereiding
 
-### Afhankelijkheden downloaden
+### Benodigde Software Installeren
 
-Om deze Chrome extensie te downloaden moeten we eerst enkele (gratis) onderdelen downloaden.
+Om deze Chrome-extensie te gebruiken, dien je eerst enkele (gratis) tools te installeren:
 
 - [Node.js](https://nodejs.org/en/download/package-manager)
 - [Git](https://git-scm.com/downloads)
-- [Visual Studio Code (optoneel maar aanbevolen)](https://nodejs.org/en/download/package-manager)
+- [Visual Studio Code (optioneel maar aanbevolen)](https://code.visualstudio.com/download)
 
-### Verbinding met OpenAI API maken
+### Verbinden met OpenAI API
 
-Om gebruik te maken van de API moeten we eerst jouw OpenAI API account gereed maken.
+Volg deze stappen om verbinding te maken met de OpenAI API:
 
-1. **Maak een OpenAI API account aan**
-   Zorg ervoor dat je een OpenAI API-account hebt. Ga naar [OpenAI API](https://openai.com/index/openai-api/) en maak een account aan. Zodra je bent ingelogd, kom je op het OpenAI API-dashboard.
+1. **OpenAI API-account aanmaken**  
+   Ga naar [OpenAI API](https://openai.com/index/openai-api/) en registreer een account.
 
-2. **Maak een API-sleutel aan**  
-   In het dashboard ga je naar je profiel en klik je op "User API Keys". Maak hier een nieuwe API-sleutel aan, bijvoorbeeld met de naam "OpenAI API Key". Bewaar de gegenereerde API-sleutel (een lange tekstreeks) op een veilige plek.
+2. **API-sleutel genereren**  
+   In je dashboard, ga naar "User API Keys" en maak een nieuwe API-sleutel aan. Sla deze sleutel veilig op.
 
-3. **Waardeer je tegoed op**
-   Via je profiel kun je ook naar "Billing" gaan om tegoed toe te voegen. Meestal is €5 tot €10 voldoende om te beginnen.
+3. **Tegoed toevoegen**  
+   Voeg in de "Billing"-sectie van je profiel tegoed toe (meestal volstaat €5 - €10).
 
-### Chrome-extensie lokaal installeren
+### Chrome-extensie Installeren
 
-Om de Chrome-extensie te gebruiken, moet je deze lokaal op je computer hebben. Volg de onderstaande stappen om het project vanuit GitHub te importeren.
+Om de extensie lokaal te gebruiken, volg je deze stappen:
 
-1. **Maak een nieuwe map aan**  
-   Kies een locatie die voor jou handig is en geef de map een duidelijke naam, bijvoorbeeld "Google Ads AI".
+1. **Map aanmaken**  
+   Creëer een nieuwe map, bijvoorbeeld "Google Ads AI".
 
-2. **Open de terminal**  
-   Navigeer in de terminal naar de locatie van de aangemaakte map.
+2. **Terminal openen**  
+   Ga in de terminal naar je nieuw aangemaakte map.
 
-3. **Initialiseer een Git-repository**  
-   Voer het volgende commando in om een nieuwe Git-omgeving te initialiseren:
+3. **Git-repository initialiseren**  
+   Voer het volgende commando uit:
 
    ```bash
    git init
    ```
 
-4. **Koppel de GitHub-repository**  
-   Verbind de map met de juiste GitHub-repository door het volgende commando uit te voeren:
+4. **Koppel de GitHub-repository**
 
    ```bash
    git remote add origin https://github.com/gijsvdbeuken/google-ads-ai.git
    ```
 
-5. **Download het project**  
-   Haal nu het project op van GitHub met het volgende commando:
+5. **Project downloaden**
 
    ```bash
    git pull origin main
    ```
 
-6. **Voeg de OpenAI API-sleutel toe aan je project**  
-   Maak in de hoofdmap van je project een nieuw bestand aan genaamd `.env`. Dit gaat makkelijker door de folder te openen met Visual Studio Code. Voeg hierin je OpenAI API-sleutel tussen de quotes toe als volgt:
+6. **OpenAI API-sleutel toevoegen**  
+   Maak in de hoofdmap een `.env`-bestand aan en voeg je OpenAI-sleutel toe:
 
    ```bash
    OPENAI_API_KEY="jouw_api_sleutel"
    ```
 
-7. **Chrome-extensie toevoegen aan Chrome**  
-   Ga naar **Chrome** > **Extensies beheren** en schakel "Ontwikkelaarsmodus" in. Klik daarna op "Uitgepakte extensie laden", navigeer naar het project, en importeer nu de "dist" folder.
+7. **Extensie in Chrome laden**  
+   Ga naar **Chrome** > **Extensies beheren**, schakel "Ontwikkelaarsmodus" in, klik op "Uitgepakte extensie laden" en selecteer de "dist"-map.
 
-Nu is het project succesvol vanuit GitHub naar je computer geïmporteerd en klaar voor gebruik.
-
-### Google Ads script instellen
-
-Om snel data van alle campagnes binnen een account op te halen, kun je mijn Google Ads script instellen. Volg hiervoor de onderstaande stappen.
+### Google Ads Script Configureren
 
 1. **Kopieer het script**  
-   Het benodigde script vind je in `script/script.js`. Kopieer de volledige code naar je klembord.
+   Kopieer de code uit `script/script.js`.
 
-2. **Voeg het script toe aan Google Ads**  
-   Ga naar Google Ads en navigeer naar **Tools** > **Bulkacties** > **Scripts**. Maak een nieuw script aan en plak de gekopieerde code erin.
-
-Je Google Ads-omgeving is nu klaar om eenvoudig data op te halen.
+2. **Voeg script toe aan Google Ads**  
+   In Google Ads, ga naar **Tools** > **Bulkacties** > **Scripts** en plak de code.
 
 ## Gebruik
 
-1. **Haal de data op**  
-    Eerst haal je de data op via de Google Ads script. begin met het invoeren van de gewenste specificaties bovenaan in het script, en klik daarna op uitvoeren.
+1. **Data ophalen**  
+   Pas de specificaties aan in het Google Ads script, voer het uit en ontvang de data per e-mail.
 
    ```javascript
-   // Email van ontvanger
    var emailReceiver = "example@gmail.com";
-   // Periode van data
-   var startDate = new Date("2024-09-01"); // Formaat: JJJJ-MM-DD
-   var endDate = new Date("2024-09-14"); // Formaat: JJJJ-MM-DD
+   var startDate = new Date("2024-09-01");
+   var endDate = new Date("2024-09-14");
    ```
 
-   Na enkele minuten ontvang je de data in CSV formaat in de mail.
-
-2. **Start de server**  
-    Navigeer via de terminal naar de map waar je het project hebt opgeslagen. Executeer vervolgens het volgende commando.
+2. **Server starten**  
+   In de terminal, voer dit commando uit:
 
    ```bash
    node server/server.js
    ```
 
-   Als het goed is ontvang je de volgende melding in de terminal.
-
-   ```bash
-   Server is running on port 3001
-   ```
+3. **Chrome-extensie gebruiken**  
+   Open de extensie, voer de bedrijfsnaam en CSV-data in, klik op "Analyze uitvoeren" en ontvang een rapport na 15-60 seconden.
