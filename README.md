@@ -1,16 +1,16 @@
 # Geen Gedoe | Google Ads AI
 
-## Voorbereiding
+## 1. Voorbereiding
 
-### Benodigde Software Installeren
+### 1.1 Benodigde Software Installeren
 
-Om deze Chrome-extensie te gebruiken, dien je eerst enkele (gratis) tools te installeren:
+Download deze software-onderdelen om de Chrome-extensie te kunnen laten functioneren:
 
 - [Node.js](https://nodejs.org/en/download/package-manager)
 - [Git](https://git-scm.com/downloads)
 - [Visual Studio Code (optioneel maar aanbevolen)](https://code.visualstudio.com/download)
 
-### Verbinden met OpenAI API
+### 1.2 Verbinden met OpenAI API
 
 Volg deze stappen om verbinding te maken met de OpenAI API:
 
@@ -23,9 +23,9 @@ Volg deze stappen om verbinding te maken met de OpenAI API:
 3. **Tegoed toevoegen**  
    Voeg in de "Billing"-sectie van je profiel tegoed toe (meestal volstaat €5 - €10).
 
-### Chrome-extensie Installeren
+### 1.3 Chrome-extensie Installeren
 
-Om de extensie lokaal te gebruiken, volg je deze stappen:
+Volg deze stappen om de Chrome-extensie lokaal te gebruiken:
 
 1. **Map aanmaken**  
    Creëer een nieuwe map, bijvoorbeeld "Google Ads AI".
@@ -53,16 +53,18 @@ Om de extensie lokaal te gebruiken, volg je deze stappen:
    ```
 
 6. **OpenAI API-sleutel toevoegen**  
-   Maak in de hoofdmap een `.env`-bestand aan en voeg je OpenAI-sleutel toe:
+   Maak in de hoofdmap een `.env`-bestand aan en voeg je OpenAI-sleutel op de volgende manier:
 
    ```bash
    OPENAI_API_KEY="jouw_api_sleutel"
    ```
 
+Houd er rekening mee dat de variabele exact als `OPENAI_API_KEY=""` genoteerd moet zijn zonder spelfouten of andere wijzigingen.
+
 7. **Extensie in Chrome laden**  
    Ga naar **Chrome** > **Extensies beheren**, schakel "Ontwikkelaarsmodus" in, klik op "Uitgepakte extensie laden" en selecteer de "dist"-map.
 
-### Google Ads Script Configureren
+### 1.4 Google Ads Script Configureren
 
 1. **Kopieer het script**  
    Kopieer de code uit `script/script.js`.
@@ -70,10 +72,10 @@ Om de extensie lokaal te gebruiken, volg je deze stappen:
 2. **Voeg script toe aan Google Ads**  
    In Google Ads, ga naar **Tools** > **Bulkacties** > **Scripts** en plak de code.
 
-## Gebruik
+## 2. Gebruik
 
 1. **Data ophalen**  
-   Pas de specificaties aan in het Google Ads script, voer het uit en ontvang de data per e-mail.
+   Pas de specificaties aan in het Google Ads script en klik op "Uitvoeren". Je ontvangt vervolgens de data ná enkele minuten bij je opgegeven email inbox.
 
    ```javascript
    var emailReceiver = "example@gmail.com";
@@ -89,4 +91,4 @@ Om de extensie lokaal te gebruiken, volg je deze stappen:
    ```
 
 3. **Chrome-extensie gebruiken**  
-   Open de extensie, voer de bedrijfsnaam en CSV-data in, klik op "Analyze uitvoeren" en ontvang een rapport na 15-60 seconden.
+   Open de extensie en voer de bedrijfsnaam en CSV-data in. klik daarna op "Analyze uitvoeren", waarna je het rapport in minder dan één minuut ontvangt.
