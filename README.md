@@ -33,26 +33,22 @@ Volg deze stappen om de Chrome-extensie lokaal te gebruiken:
 2. **Terminal openen**  
    Ga in de terminal naar je nieuw aangemaakte map.
 
-3. **Git-repository initialiseren**  
-   Voer het volgende commando uit:
+3. **Project importeren**  
+   Voer de volgende commando's een-voor-een uit:
 
    ```bash
    git init
    ```
 
-4. **Koppel de GitHub-repository**
-
    ```bash
    git remote add origin https://github.com/gijsvdbeuken/google-ads-ai.git
    ```
-
-5. **Project downloaden**
 
    ```bash
    git pull origin main
    ```
 
-6. **OpenAI API-sleutel toevoegen**  
+4. **OpenAI API-sleutel toevoegen**  
    Maak in de hoofdmap een `.env`-bestand aan en voeg je OpenAI-sleutel op de volgende manier:
 
    ```bash
@@ -70,25 +66,37 @@ Houd er rekening mee dat de variabele exact als `OPENAI_API_KEY=""` genoteerd mo
    Kopieer de code uit `script/script.js`.
 
 2. **Voeg script toe aan Google Ads**  
-   In Google Ads, ga naar **Tools** > **Bulkacties** > **Scripts** en plak de code.
+   In Google Ads, ga naar **Tools** > **Bulkacties** > **Scripts** en plak de code hierin. Mogelijk wordt je gevraagd om je te autoriseren bij het plakken en uitvoeren van het script.
 
 ## 2. Gebruik
 
 1. **Data ophalen**  
-   Pas de specificaties aan in het Google Ads script en klik op "Uitvoeren". Je ontvangt vervolgens de data ná enkele minuten bij je opgegeven email inbox.
+    Pas de specificaties aan in het Google Ads script en klik op "Uitvoeren". Je ontvangt vervolgens de data ná enkele minuten bij je opgegeven email inbox.
 
    ```javascript
+   // Email van ontvanger
    var emailReceiver = "example@gmail.com";
-   var startDate = new Date("2024-09-01");
-   var endDate = new Date("2024-09-14");
+   // Periode van data
+   var startDate = new Date("2024-09-01"); // Formaat: JJJJ-MM-DD
+   var endDate = new Date("2024-09-14"); // Formaat: JJJJ-MM-DD
    ```
 
-2. **Server starten**  
+2. **ChatGPT model wijzigen (optioneel)**
+   Mocht je ooit het ChatGPT model willen wijzigen, dan kan dat in `server/server.js`.
+
+```javascript
+const completion = await openai.chat.completions.create({
+  messages: [{ role: "user", content: message }],
+  model: "gpt-4o-mini",
+});
+```
+
+2. **Server starten**
    In de terminal, voer dit commando uit:
 
-   ```bash
-   node server/server.js
-   ```
+```bash
+node server/server.js
+```
 
 3. **Chrome-extensie gebruiken**  
    Open de extensie en voer de bedrijfsnaam en CSV-data in. klik daarna op "Analyze uitvoeren", waarna je het rapport in minder dan één minuut ontvangt.
