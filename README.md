@@ -10,26 +10,41 @@ In het dashboard ga je naar je profiel en klik je op "User API Keys". Maak hier 
 
 ### React project opzetten
 
-Om de Chrome extensie te gebruiken dien je deze lokaal op je computer te hebben staan. Dit gaan we doen door het project vanuit GitHub te importeren.
+Hier is een verbeterde en gestructureerde versie van je tekst:
 
-Begin met het aanmaken van een folder op een locatie die je zelf fijn vindt. Geef deze folder een duidelijke naam zoals "Google Ads AI" of dergelijk.
+---
 
-Open vervolgens de terminal vanuit de locatie van deze folder, en initialiseer een git omgeving door het volgende commando in te typen.
+### Chrome-extensie lokaal installeren
 
-```
-git init
-// Druk nu op ENTER
-```
+Om de Chrome-extensie te gebruiken, moet je deze lokaal op je computer hebben. Volg de onderstaande stappen om het project vanuit GitHub te importeren.
 
-Hierna zorg je dat je de locatie van het project dat je wilt opvraagd koppeld aan de folderlocatie.
+1. **Maak een nieuwe map aan**  
+   Kies een locatie die voor jou handig is en geef de map een duidelijke naam, bijvoorbeeld "Google Ads AI".
 
-```
-git remote add origin https://github.com/gijsvdbeuken/google-ads-ai.git
-// Druk nu op ENTER
-```
+2. **Open de terminal**  
+   Navigeer in de terminal naar de locatie van de aangemaakte map.
 
-Hierna importeer je het project vanuit GitHub naar jouw lokale computer.
+3. **Initialiseer een Git-repository**  
+   Voer het volgende commando in om een nieuwe Git-omgeving te initialiseren:
 
-```
-git pull origin main
-```
+   ```bash
+   git init
+   ```
+
+4. **Koppel de GitHub-repository**  
+   Verbind de map met de juiste GitHub-repository door het volgende commando uit te voeren:
+
+   ```bash
+   git remote add origin https://github.com/gijsvdbeuken/google-ads-ai.git
+   ```
+
+5. **Download het project**  
+   Haal nu het project op van GitHub met het volgende commando:
+
+   ```bash
+   git pull origin main
+   ```
+
+---
+
+Deze versie is duidelijker gestructureerd en beter leesbaar.
