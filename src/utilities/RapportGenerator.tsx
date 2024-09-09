@@ -1,4 +1,3 @@
-// GenerateWordFile.tsx
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { saveAs } from "file-saver";
 

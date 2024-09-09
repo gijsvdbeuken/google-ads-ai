@@ -14,9 +14,17 @@ function App() {
     new Date().toISOString().split("T")[0]
   );
 
-  const overviewPrompt: string = `Geef eerst onder elkaar met een regel witruimte het aantal Clicks de CTR, de Kosten, de CPC, het Aantal Conversies en de Kosten per Conversie. Schrijf daarna één paragraaf over de statistieken van alle campagnes bij elkaar opgeteld. zet GEEN titel boven de paragraaf, ik wil enkel de inhoudelijke paragraaftekst.`;
+  const overviewPrompt: string = `Geef eerst bij elkaar het aantal Clicks de CTR, de Kosten, de CPC, het Aantal Conversies en de Kosten per Conversie als concrete cijfers, zonder extra informatie. 
+  
+  Hierna schrijf je één paragraaf over de statistieken van alle campagnes bij elkaar opgeteld. zet GEEN titel boven de paragraaf, ik wil enkel de inhoudelijke paragraaftekst.`;
 
-  const detailedPrompt: string = `Geef een analyze over de volgende campagnes. Geef eerst de naam van de campagne (Campagne: <naam_campagne>), gevolgd door 5 alinea's: "Leeftijden", "Geslacht", "Apparaten", "Dag en Tijd, en "Doelgroepen". Schrijf de alinea telkens ONDER de titel met een regel witruimte er ussenin, en gebruik geen markdown of tekens als ":".`;
+  const detailedPrompt: string = `Geef een analyze over de volgende campagnes op chronologische volgorde. 
+  
+  Geef eerst de naam van de campagne (Campagne: <naam_campagne>), gevolgd door 5 alinea's: "Leeftijden", "Geslacht", "Apparaten", "Dag en Tijd, en "Doelgroepen". Wanneer je geen relevante informatie kon vinden m.b.t. de betreffende campagne en een van de alinea's, citeer je "N/A".
+  
+  Schrijf de alinea's telkens ONDER de titel, met een extra regel witruimte tussen de titel en alinea in.
+  
+  Gebruik geen markdown of tekens als ":".`;
 
   useEffect(() => {
     if (response) {
