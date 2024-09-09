@@ -84,19 +84,19 @@ Houd er rekening mee dat de variabele exact als `OPENAI_API_KEY=""` genoteerd mo
 2. **ChatGPT model wijzigen (optioneel)**
    Mocht je ooit het ChatGPT model willen wijzigen, dan kan dat in `server/server.js`.
 
-```javascript
-const completion = await openai.chat.completions.create({
-  messages: [{ role: "user", content: message }],
-  model: "gpt-4o-mini",
-});
-```
+   ```javascript
+   const completion = await openai.chat.completions.create({
+     messages: [{ role: "user", content: message }],
+     model: "gpt-4o-mini",
+   });
+   ```
 
-2. **Server starten**
+3. **Server starten**
    In de terminal, voer dit commando uit:
 
-```bash
-node server/server.js
-```
+   ```bash
+   node server/server.js
+   ```
 
-3. **Chrome-extensie gebruiken**  
+4. **Chrome-extensie gebruiken**
    Open de extensie en voer de bedrijfsnaam en CSV-data in. klik daarna op "Analyze uitvoeren", waarna je het rapport in minder dan één minuut ontvangt.
