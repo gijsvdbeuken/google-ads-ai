@@ -2,7 +2,15 @@
 
 ## Voorbereiding
 
-### OpenAI API opzetten en gereed maken
+### Afhankelijkheden downloaden
+
+Om deze Chrome extensie te downloaden moeten we eerst enkele (gratis) onderdelen downloaden.
+
+- [Node.js](https://nodejs.org/en/download/package-manager)
+- [Git](https://git-scm.com/downloads)
+- [Visual Studio Code (optoneel maar aanbevolen)](https://nodejs.org/en/download/package-manager)
+
+### Verbinding met OpenAI API maken
 
 Om gebruik te maken van de API moeten we eerst jouw OpenAI API account gereed maken.
 
@@ -47,15 +55,18 @@ Om de Chrome-extensie te gebruiken, moet je deze lokaal op je computer hebben. V
    ```
 
 6. **Voeg de OpenAI API-sleutel toe aan je project**  
-   Maak in de hoofdmap van je project een nieuw bestand aan genaamd `.env`. Voeg hierin je OpenAI API-sleutel toe als volgt:
+   Maak in de hoofdmap van je project een nieuw bestand aan genaamd `.env`. Dit gaat makkelijker door de folder te openen met Visual Studio Code. Voeg hierin je OpenAI API-sleutel tussen de quotes toe als volgt:
 
    ```bash
-   OPENAI_API_KEY="<jouw_api_sleutel>"
+   OPENAI_API_KEY="jouw_api_sleutel"
    ```
+
+7. **Chrome-extensie toevoegen aan Chrome**  
+   Ga naar **Chrome** > **Extensies beheren** en schakel "Ontwikkelaarsmodus" in. Klik daarna op "Uitgepakte extensie laden", navigeer naar het project, en importeer nu de "dist" folder.
 
 Nu is het project succesvol vanuit GitHub naar je computer geïmporteerd en klaar voor gebruik.
 
-### Eenvoudig data ophalen van alle campagnes
+### Google Ads script instellen
 
 Om snel data van alle campagnes binnen een account op te halen, kun je mijn Google Ads script instellen. Volg hiervoor de onderstaande stappen.
 
@@ -68,3 +79,29 @@ Om snel data van alle campagnes binnen een account op te halen, kun je mijn Goog
 Je Google Ads-omgeving is nu klaar om eenvoudig data op te halen.
 
 ## Gebruik
+
+1. **Haal de data op**  
+    Eerst haal je de data op via de Google Ads script. begin met het invoeren van de gewenste specificaties bovenaan in het script, en klik daarna op uitvoeren.
+
+   ```javascript
+   // Email van ontvanger
+   var emailReceiver = "example@gmail.com";
+   // Periode van data
+   var startDate = new Date("2024-09-01"); // Formaat: JJJJ-MM-DD
+   var endDate = new Date("2024-09-14"); // Formaat: JJJJ-MM-DD
+   ```
+
+   Na enkele minuten ontvang je de data in CSV formaat in de mail.
+
+2. **Start de server**  
+    Navigeer via de terminal naar de map waar je het project hebt opgeslagen. Executeer vervolgens het volgende commando.
+
+   ```bash
+   node server/server.js
+   ```
+
+   Als het goed is ontvang je de volgende melding in de terminal.
+
+   ```bash
+   Server is running on port 3001
+   ```
