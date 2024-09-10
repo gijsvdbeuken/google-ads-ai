@@ -37,6 +37,10 @@ Volg deze stappen om de Chrome-extensie lokaal te gebruiken:
    Voer de volgende commando's een-voor-een uit:
 
    ```bash
+   npm install
+   ```
+
+   ```bash
    git init
    ```
 
@@ -57,7 +61,7 @@ Volg deze stappen om de Chrome-extensie lokaal te gebruiken:
 
 Houd er rekening mee dat de variabele exact als `OPENAI_API_KEY=""` genoteerd moet zijn zonder spelfouten of andere wijzigingen.
 
-7. **Extensie in Chrome laden**  
+5. **Extensie in Chrome laden**  
    Ga naar **Chrome** > **Extensies beheren**, schakel "Ontwikkelaarsmodus" in, klik op "Uitgepakte extensie laden" en selecteer de "dist"-map.
 
 ### 1.4 Google Ads Script Configureren

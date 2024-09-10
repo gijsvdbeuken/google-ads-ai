@@ -145,13 +145,42 @@ small {
   padding: 7.5px 0px 0px 0px;
 }
 
+textArea {
+  border-style: none;
+  font-family: "Gilroy";
+  font-weight: 500;
+  font-size: 16px;
+  width: 100%;
+  height: 60px;
+  margin-bottom: 10px;
+  padding: 15px;
+  border-radius: 5px;
+  color: #faf3ed;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 2px solid transparent;
+}
+
+select {
+  border-style: none;
+  font-family: "Gilroy";
+  font-weight: 600;
+  font-size: 16px;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 15px 10px;
+  border-radius: 5px;
+  color: #faf3ed;
+  background-color: rgba(255, 255, 255, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
 .container {
   display: flex;
   flex-direction: column;
   padding: 10px;
   border-radius: 10px;
   min-width: 400px;
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.35);
 }
 
 .dataForm {
@@ -167,7 +196,7 @@ small {
   color: #faf3ed;
   padding: 15px 10px;
   cursor: pointer;
-  background-color: rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.35);
 }
 
 .finished {
@@ -184,6 +213,27 @@ small {
   color: #e74764 !important;
   cursor: pointer;
   background-color: white;
+}
+
+.fineTuneContainer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 10px;
+}
+
+.analyzeLevel {
+  display: flex;
+  align-items: start;
+  flex-direction: column;
+  width: 50%;
+}
+
+.textTone {
+  display: flex;
+  align-items: start;
+  flex-direction: column;
+  width: 50%;
 }
 
 input[type="file"]::-webkit-file-upload-button {
