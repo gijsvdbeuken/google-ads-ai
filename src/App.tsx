@@ -9,8 +9,9 @@ function App() {
   const [companyName, setCompanyName] = useState<string | null>(null);
   const [data, setData] = useState<File[]>([]);
   const [userAdditions, setUserAdditions] = useState<string>("");
+  const [textLanguage, setTextLanguage] = useState<string>("");
   const [outputTone, setOutputTone] = useState<string>("");
-  const [analyzeLevel, setAnalyzeLevel] = useState<string>("");
+  const [analyzeLevel, setAnalyzeLevel] = useState<string>("campaignLevel");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [response, setResponse] = useState("");
   const [currentDate] = useState<string>(
@@ -21,18 +22,18 @@ function App() {
 
   const overviewPrompt: string =
     `${outputTone}` +
-    `geef eerst bij elkaar het aantal Clicks de CTR, de Kosten, de CPC, het Aantal Conversies en de Kosten per Conversie als concrete cijfers, zonder extra informatie. Hierna schrijf je één paragraaf over de statistieken van alle campagnes bij elkaar opgeteld. zet GEEN titel boven de paragraaf, ik wil enkel de inhoudelijke paragraaftekst. ` +
+    `geef in het ${textLanguage} eerst bij elkaar het aantal Clicks de CTR, de Kosten, de CPC, het Aantal Conversies en de Kosten per Conversie als concrete cijfers, zonder extra informatie. Hierna schrijf je één paragraaf over de statistieken van alle campagnes bij elkaar opgeteld. zet GEEN titel boven de paragraaf, ik wil enkel de inhoudelijke paragraaftekst. ` +
     `${userAdditions}`;
 
   const campaignLevelPrompt: string =
     `${outputTone}` +
-    `geef een analyze over de volgende campagnes op chronologische volgorde. Geef eerst de naam van de campagne (Campagne: <naam_campagne>), gevolgd door 5 alinea's: "Leeftijden", "Geslacht", "Apparaten", "Dag en Tijd, en "Doelgroepen". Doe dit ook voor de campagnes erna. Wanneer je geen relevante informatie kon vinden m.b.t. de betreffende campagne en een van de alinea's, citeer je "N/A". ` +
+    `geef in het ${textLanguage} een analyze over de volgende campagnes op chronologische volgorde. Geef eerst de naam van de campagne (Campagne: <naam_campagne>), gevolgd door 5 alinea's: "Leeftijden", "Geslacht", "Apparaten", "Dag en Tijd, en "Doelgroepen". Doe dit ook voor de campagnes erna. Wanneer je geen relevante informatie kon vinden m.b.t. de betreffende campagne en een van de alinea's, citeer je "N/A". ` +
     `${syntaxRequirements}` +
     `${userAdditions}`;
 
   const adGroupLevelPrompt: string =
     `${outputTone}` +
-    `geef een analyze over de volgende advertentiegroepen op chronologische volgorde. Schrijf voor iedere individuele advertentiegroep een korte aline, waarbij je telksens de titel aanduid met de naam van de betreffende advertentiegroep. ` +
+    `geef in het ${textLanguage} een analyze over de volgende advertentiegroepen op chronologische volgorde. Schrijf voor iedere individuele advertentiegroep een korte aline, waarbij je telksens de titel aanduid met de naam van de betreffende advertentiegroep. ` +
     `${syntaxRequirements}` +
     `${userAdditions}`;
 
@@ -52,14 +53,21 @@ function App() {
     console.log("Data: " + data);
     console.log("Overview prompt: " + overviewPrompt);
     console.log("Follow-up prompt: " + followUpPrompt);
+    console.log("Analyse level: " + analyzeLevel);
 
-    dataUploader(data, overviewPrompt, followUpPrompt, setResponse);
-    setIsUploading(false);
+    dataUploader(
+      data,
+      overviewPrompt,
+      followUpPrompt,
+      setIsUploading,
+      setResponse
+    );
   };
 
   return (
     <div className="container">
-      <div>
+      <div className="logoContainer">
+        <h1>Google Ads AI</h1>
         <img src={logo} className="logo" alt="Geen Gedoe Google Ads logo" />
       </div>
       <div className="dataForm">
@@ -81,16 +89,16 @@ function App() {
           }}
         ></input>
         <div className="fineTuneContainer">
-          <div className="analyzeLevel">
-            <label>Analyseniveau</label>
+          <div className="textLanguage">
+            <label>Teksttaal</label>
             <select
-              value={analyzeLevel}
+              value={textLanguage}
               onChange={(e) => {
-                setAnalyzeLevel(e.target.value);
+                setTextLanguage(e.target.value);
               }}
             >
-              <option value="campaignLevel">Campagne</option>
-              <option value="adGroupLevel">Advertentiegroep</option>
+              <option value="nederlands">Nederlands</option>
+              <option value="engels">Engels</option>
             </select>
           </div>
           <div className="textTone">
@@ -101,26 +109,43 @@ function App() {
                 setOutputTone(e.target.value);
               }}
             >
-              <option value="">Kies een optie</option>
               <option value="In formele stijl, ">Formeel</option>
               <option value="In informele stijl, ">Informeel</option>
+              <option value="In zakelijke stijl, ">Zakelijk</option>
+              <option value="In behapzaam en eenvoudigere stijl, ">
+                Behapzaam
+              </option>
+              <option value="In enthausiaste en vrolijke stijl, ">
+                Enthausiast
+              </option>
+              <option value="In inspirerende en motiverende stijl, ">
+                Inspirerend
+              </option>
               <option value="In humoristische stijl, ">Humoristisch</option>
               <option value="In humoristische en neerbuigende stijl, ">
                 Neerbuigend
               </option>
-              <option value="In dreigende maar gepaste stijl, ">
-                Dreigend
-              </option>
             </select>
           </div>
         </div>
-
+        <div className="x">
+          <label>Analyseniveau</label>
+          <select
+            value={analyzeLevel}
+            onChange={(e) => {
+              setAnalyzeLevel(e.target.value);
+            }}
+          >
+            <option value="campaignLevel">Campagne</option>
+            <option value="adGroupLevel">Advertentiegroep</option>
+          </select>
+        </div>
         <label>Toevoegingen (optioneel)</label>
-        <textarea
+        <input
           onChange={(e) => {
             setUserAdditions(e.target.value);
           }}
-        ></textarea>
+        ></input>
       </div>
       <button onClick={handleClick} disabled={isUploading}>
         {isUploading === true

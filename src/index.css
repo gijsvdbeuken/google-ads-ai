@@ -52,7 +52,6 @@ body {
 
 form {
   padding: 0px;
-  margin: 0px 0px 10px 0px;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -116,6 +115,12 @@ input {
   transition: border-color 0.25s;
 }
 
+h1 {
+  font-family: "Gilroy";
+  font-weight: 600;
+  font-size: 20;
+}
+
 input:focus {
   border: 2px solid #e74764;
   outline: none;
@@ -174,6 +179,11 @@ select {
   border: 2px solid rgba(255, 255, 255, 0.5);
 }
 
+img.logo {
+  margin: 0px !important;
+  padding: 0px !important;
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -222,7 +232,7 @@ select {
   gap: 10px;
 }
 
-.analyzeLevel {
+.textLanguage {
   display: flex;
   align-items: start;
   flex-direction: column;
@@ -234,6 +244,21 @@ select {
   align-items: start;
   flex-direction: column;
   width: 50%;
+}
+
+.x {
+  display: flex;
+  align-items: start;
+  flex-direction: column;
+  width: 100%;
+}
+
+.logoContainer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: end;
+  justify-content: space-between; /* Spreads items apart */
 }
 
 input[type="file"]::-webkit-file-upload-button {

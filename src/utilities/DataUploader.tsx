@@ -2,6 +2,7 @@ export const dataUploader = async (
   campaignData: File[],
   overviewPrompt: string,
   detailedPrompt: string,
+  setIsUploading: (isUploading: boolean) => void,
   setResponse: (response: string) => void
 ) => {
   if (campaignData.length === 0) {
@@ -39,6 +40,7 @@ export const dataUploader = async (
     setResponse(
       analyzedCampagne.content + "\n\n" + analyzedCampaignOne.content
     );
+    setIsUploading(false);
   } catch (err) {
     console.log(err);
   }
