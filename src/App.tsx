@@ -1,41 +1,48 @@
 import { useState, useEffect } from "react";
 import { rapportGenerator } from "./utilities/RapportGenerator";
-import { dataUploader } from "./utilities/DataUploader";
 import logo from "/logo.png";
 import "./App.css";
 SVGAnimateTransformElement;
 
 function App() {
+  // analyzeLevel moet weer toegevoegd worden
+  // userAdditions moeten weer toegevoegd worden
+
   const [companyName, setCompanyName] = useState<string | null>(null);
-  const [data, setData] = useState<File[]>([]);
-  const [userAdditions, setUserAdditions] = useState<string>("");
-  const [textLanguage, setTextLanguage] = useState<string>("");
-  const [outputTone, setOutputTone] = useState<string>("");
-  const [analyzeLevel, setAnalyzeLevel] = useState<string>("campaignLevel");
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [response, setResponse] = useState("");
   const [currentDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
+  const [dataBatch, setDataBatch] = useState<File[]>([]);
+  const [parameterLanguage, setParameterLanguage] = useState<string>("");
+  const [parameterTone, setParameterTone] = useState<string>("");
 
-  const syntaxRequirements: string = `Schrijf de alinea's telkens ONDER de titel, met een extra regel witruimte tussen de titel en alinea in. Gebruik geen markdown of tekens als ":". `;
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
-  const overviewPrompt: string =
-    `${outputTone}` +
-    `geef in het ${textLanguage} eerst bij elkaar het aantal Clicks de CTR, de Kosten, de CPC, het Aantal Conversies en de Kosten per Conversie als concrete cijfers, zonder extra informatie. Hierna schrijf je één paragraaf over de statistieken van alle campagnes bij elkaar opgeteld. zet GEEN titel boven de paragraaf, ik wil enkel de inhoudelijke paragraaftekst. ` +
-    `${userAdditions}`;
+  const [response, setResponse] = useState("");
 
-  const campaignLevelPrompt: string =
-    `${outputTone}` +
-    `geef in het ${textLanguage} een analyze over de volgende campagnes op chronologische volgorde. Geef eerst de naam van de campagne (Campagne: <naam_campagne>), gevolgd door 5 alinea's: "Leeftijden", "Geslacht", "Apparaten", "Dag en Tijd, en "Doelgroepen". Doe dit ook voor de campagnes erna. Wanneer je geen relevante informatie kon vinden m.b.t. de betreffende campagne en een van de alinea's, citeer je "N/A". ` +
-    `${syntaxRequirements}` +
-    `${userAdditions}`;
+  // prompt summary
+  const promptSummary: string =
+    `${parameterLanguage}` +
+    `${parameterTone}` +
+    `Schrijf een korte samenvatting op basis van de volgende data. Dit is Google Ads data van alle campagnes van het bedrijf ${companyName}. Schijf eerst op één regel enkel de cijfers als concrete waarders, en schrijf daaronder een korte alinea ter samenvatting van bovenstaande cijfers. Schrijf geen titel boven de tekst, en vermijd markdown syntax.`;
 
-  const adGroupLevelPrompt: string =
-    `${outputTone}` +
-    `geef in het ${textLanguage} een analyze over de volgende advertentiegroepen op chronologische volgorde. Schrijf voor iedere individuele advertentiegroep een korte aline, waarbij je telksens de titel aanduid met de naam van de betreffende advertentiegroep. ` +
-    `${syntaxRequirements}` +
-    `${userAdditions}`;
+  // prompts paragraphs
+  const promptAge: string =
+    `${parameterLanguage}` +
+    `${parameterTone}` +
+    `schrijf een hele korte alinea van ~3 zinnen over leeftijden op basis van de volgende data over de "1 - GG - Marketing bureau locatie" campagne als totale opgetelde cijfers, dus niet van dag tot dag. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers. Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Schrijf geen titel boven de tekst, en vermijd markdown syntax. Overigens hoef je de campagnenaam zelf niet aan te duiden in de alinea. Ben je ervan bewust dat deze alle data per individuele dag is ingedeeld. Wanneer je totaal-cijfers opnoemd over CTR, kosten, etc. moet je dus eerst alle dagen bij elkaar optellen.`;
+  const promptGender: string =
+    `${parameterLanguage}` +
+    `${parameterTone}` +
+    `schrijf een hele korte alinea van ~3 zinnen over gender op basis van de volgende data over de "1 - GG - Marketing bureau locatie" campagne als totale opgetelde cijfers, dus niet van dag tot dag. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers. Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Schrijf geen titel boven de tekst, en vermijd markdown syntax. Overigens hoef je de campagnenaam zelf niet aan te duiden in de alinea. Ben je ervan bewust dat alle data per individuele dag is ingedeeld. Wanneer je totaal-cijfers opnoemd over CTR, kosten, etc. moet je dus eerst alle dagen bij elkaar optellen.`;
+  const promptDevice: string =
+    `${parameterLanguage}` +
+    `${parameterTone}` +
+    `schrijf een hele korte alinea van ~3 zinnen over apparaten op basis van de volgende data over de "1 - GG - Marketing bureau locatie" campagne als totale opgetelde cijfers, dus niet van dag tot dag. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers. Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Schrijf geen titel boven de tekst, en vermijd markdown syntax. Overigens hoef je de campagnenaam zelf niet aan te duiden in de alinea. Ben je ervan bewust dat alle data per individuele dag is ingedeeld. Wanneer je totaal-cijfers opnoemd over CTR, kosten, etc. moet je dus eerst alle dagen bij elkaar optellen.`;
+  const promptDayAndTime: string =
+    `${parameterLanguage}` +
+    `${parameterTone}` +
+    `schrijf een hele korte alinea van ~3 zinnen over de weekdagen op basis van de volgende data over de "1 - GG - Marketing bureau locatie" campagne als totale opgetelde cijfers, dus niet van dag tot dag. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers. Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Schrijf geen titel boven de tekst, en vermijd markdown syntax. Overigens hoef je de campagnenaam zelf niet aan te duiden in de alinea. Ben je ervan bewust dat deze alle data per individuele dag is ingedeeld. Wanneer je totaal-cijfers opnoemd over CTR, kosten, etc. moet je dus eerst alle dagen bij elkaar optellen.`;
 
   useEffect(() => {
     if (response) {
@@ -43,25 +50,127 @@ function App() {
     }
   }, [response, companyName, currentDate]);
 
-  const handleClick = () => {
-    const followUpPrompt =
-      analyzeLevel === "campaignLevel"
-        ? campaignLevelPrompt
-        : adGroupLevelPrompt;
+  const handleClick = async () => {
+    // check for content
+    if (dataBatch.length === 0) {
+      alert("Geen bestanden geselecteerd, oekel.");
+      setIsUploading(false);
+      return;
+    }
+
+    // Start uploading
     setIsUploading(true);
 
-    console.log("Data: " + data);
-    console.log("Overview prompt: " + overviewPrompt);
-    console.log("Follow-up prompt: " + followUpPrompt);
-    console.log("Analyse level: " + analyzeLevel);
+    // assigning csv files
+    const getFileByName = (fileName: string) => {
+      const file = dataBatch.find((file) => file.name === fileName);
+      return file;
+    };
 
-    dataUploader(
-      data,
-      overviewPrompt,
-      followUpPrompt,
-      setIsUploading,
-      setResponse
-    );
+    const csvSummary = getFileByName("summary_Performance.csv");
+    const csvCampaign = getFileByName("campaign_Performance.csv");
+    const csvGender = getFileByName("gender_Performance.csv");
+    const csvAge = getFileByName("age_Performance.csv");
+    const csvDevice = getFileByName("device_Performance.csv");
+
+    if (!csvSummary || !csvCampaign || !csvGender || !csvAge || !csvDevice) {
+      alert("Niet alle benodigde bestanden zijn geselecteerd.");
+      setIsUploading(false);
+      return;
+    }
+
+    // making requests
+    try {
+      const request = async (
+        csvFile: File,
+        prompt: string,
+        model: string,
+        temperature: number,
+        maxTokens: number
+      ) => {
+        let csvFileText: string = "";
+        csvFileText += await csvFile.text();
+
+        const response = await fetch("http://localhost:3001/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: prompt + csvFileText,
+            model: model,
+            temperature: temperature,
+            max_tokens: maxTokens,
+          }),
+        });
+
+        const jsonResponse = await response.json();
+        console.log(jsonResponse);
+        return jsonResponse;
+      };
+
+      const responseSummaryPrompt = await request(
+        csvSummary,
+        promptSummary,
+        "gpt-4o-mini",
+        0.5,
+        250
+      );
+      const responsePromptAge = await request(
+        csvAge,
+        promptAge,
+        "gpt-4o-2024-08-06",
+        0.3,
+        200
+      );
+      const responsePromptGender = await request(
+        csvGender,
+        promptGender,
+        "gpt-4o-2024-08-06",
+        0.3,
+        200
+      );
+      const responsePromptDevices = await request(
+        csvDevice,
+        promptDevice,
+        "gpt-4o-2024-08-06",
+        0.3,
+        200
+      );
+      const responsePromptDayAndTime = await request(
+        csvCampaign,
+        promptDayAndTime,
+        "gpt-4o-2024-08-06",
+        0.3,
+        200
+      );
+
+      setResponse(
+        "Samenvatting" +
+          "\n\n" +
+          responseSummaryPrompt.content +
+          "\n\n" +
+          "Leeftijden" +
+          "\n\n" +
+          responsePromptAge.content +
+          "\n\n" +
+          "Geslacht" +
+          "\n\n" +
+          responsePromptGender.content +
+          "\n\n" +
+          "Apparaten" +
+          "\n\n" +
+          responsePromptDevices.content +
+          "\n\n" +
+          "Dag en Tijd" +
+          "\n\n" +
+          responsePromptDayAndTime.content
+      );
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -77,14 +186,14 @@ function App() {
             setCompanyName(e.target.value);
           }}
         ></input>
-        <label>Google Ads data</label>
+        <label>Data</label>
         <input
           className="fileInput"
           type="file"
           multiple
           onChange={(e) => {
             if (e.target.files) {
-              setData(Array.from(e.target.files));
+              setDataBatch(Array.from(e.target.files));
             }
           }}
         ></input>
@@ -92,37 +201,37 @@ function App() {
           <div className="textLanguage">
             <label>Teksttaal</label>
             <select
-              value={textLanguage}
+              value={parameterLanguage}
               onChange={(e) => {
-                setTextLanguage(e.target.value);
+                setParameterLanguage(e.target.value);
               }}
             >
-              <option value="nederlands">Nederlands</option>
-              <option value="engels">Engels</option>
+              <option value="In het nederlands, ">Nederlands</option>
+              <option value="In het engels, ">Engels</option>
             </select>
           </div>
           <div className="textTone">
             <label>Teksttoon</label>
             <select
-              value={outputTone}
+              value={parameterTone}
               onChange={(e) => {
-                setOutputTone(e.target.value);
+                setParameterTone(e.target.value);
               }}
             >
-              <option value="In formele stijl, ">Formeel</option>
-              <option value="In informele stijl, ">Informeel</option>
-              <option value="In zakelijke stijl, ">Zakelijk</option>
-              <option value="In behapzaam en eenvoudigere stijl, ">
+              <option value="in formele stijl, ">Formeel</option>
+              <option value="in informele stijl, ">Informeel</option>
+              <option value="in zakelijke stijl, ">Zakelijk</option>
+              <option value="in behapzaam en eenvoudigere stijl, ">
                 Behapzaam
               </option>
-              <option value="In enthausiaste en vrolijke stijl, ">
+              <option value="in enthausiaste en vrolijke stijl, ">
                 Enthausiast
               </option>
-              <option value="In inspirerende en motiverende stijl, ">
+              <option value="in inspirerende en motiverende stijl, ">
                 Inspirerend
               </option>
-              <option value="In humoristische stijl, ">Humoristisch</option>
-              <option value="In humoristische en neerbuigende stijl, ">
+              <option value="in humoristische stijl, ">Humoristisch</option>
+              <option value="in humoristische en neerbuigende stijl, ">
                 Neerbuigend
               </option>
             </select>
@@ -130,22 +239,13 @@ function App() {
         </div>
         <div className="x">
           <label>Analyseniveau</label>
-          <select
-            value={analyzeLevel}
-            onChange={(e) => {
-              setAnalyzeLevel(e.target.value);
-            }}
-          >
+          <select>
             <option value="campaignLevel">Campagne</option>
             <option value="adGroupLevel">Advertentiegroep</option>
           </select>
         </div>
         <label>Toevoegingen (optioneel)</label>
-        <input
-          onChange={(e) => {
-            setUserAdditions(e.target.value);
-          }}
-        ></input>
+        <input></input>
       </div>
       <button onClick={handleClick} disabled={isUploading}>
         {isUploading === true
@@ -157,3 +257,29 @@ function App() {
 }
 
 export default App;
+
+/*
+      console.log(`companyname: ${companyName}`);
+      console.log(`date: ${currentDate}`);
+      console.log("--------------------");
+      console.log("initial request");
+      console.log("prompt: " + promptSummary);
+      console.log("file: " + csvSummary.text.toString);
+      console.log("--------------------");
+      console.log("first request");
+      console.log("prompt: " + promptAge);
+      console.log("file: " + csvAge.text.toString);
+      console.log("--------------------");
+      console.log("second request");
+      console.log("prompt: " + promptGender);
+      console.log("file: " + csvGender.text.toString);
+      console.log("--------------------");
+      console.log("third request");
+      console.log("prompt: " + promptDevice);
+      console.log("file: " + csvDevice.text.toString);
+      console.log("--------------------");
+      console.log("fourth request");
+      console.log("prompt: " + promptDayAndTime);
+      console.log("file: " + csvCampaign.text.toString);
+      console.log("--------------------");
+      */

@@ -2,6 +2,8 @@ import express from "express";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 
+// gpt-4o-2024-08-06
+
 dotenv.config();
 
 const app = express();
@@ -13,10 +15,12 @@ app.use(express.json());
 
 app.post("/chat", async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, model, temperature, max_tokens } = req.body;
     const completion = await openai.chat.completions.create({
       messages: [{ role: "user", content: message }],
-      model: "gpt-4o-mini",
+      model: model,
+      max_tokens: max_tokens,
+      temperature: temperature,
     });
 
     res.json(completion.choices[0].message);

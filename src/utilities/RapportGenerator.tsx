@@ -72,11 +72,11 @@ export const rapportGenerator = (
           new Paragraph({}),
           ...paragraphs.flatMap((paragraph) => {
             const isTitle =
+              paragraph === "Samenvatting" ||
               paragraph === "Leeftijden" ||
               paragraph === "Geslacht" ||
               paragraph === "Apparaten" ||
-              paragraph === "Dag en Tijd" ||
-              paragraph === "Doelgroepen";
+              paragraph === "Dag en Tijd";
 
             return [
               new Paragraph({
