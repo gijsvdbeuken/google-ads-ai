@@ -8,6 +8,55 @@ import logo from '/logo.png';
 import './App.css';
 
 function App() {
+  const makeApiRequests = async (data: File | DataStructureGenderCampaign | DataStructureGenderAdGroup | DataStructureAgeRangeCampaign | DataStructureAgeRangeAdGroup, prompt: string, model: string, temperature: number, maxTokens: number) => {
+    if (data instanceof File) {
+      if (data.name === 'report_summary.csv' || data.name === 'report_device.csv' || data.name === 'report_day.csv') {
+        let csvText: string = '';
+        csvText += await data.text();
+        console.log('---');
+        console.log('Prompt: ' + prompt);
+        console.log('Given data extracted from file type: ' + csvText);
+        const response = await fetch('http://localhost:3001/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: prompt + csvText,
+            model: model,
+            temperature: temperature,
+            max_tokens: maxTokens,
+            data: data,
+          }),
+        });
+        const fileResponse = await response.json();
+        return fileResponse;
+      } else {
+        console.log('Er ging iets mis bij het request met ' + data.name);
+        return;
+      }
+    } else {
+      console.log('---');
+      console.log('Prompt: ' + prompt);
+      console.log('Given data extracted from datastructure type: ' + JSON.stringify(data, null, 2));
+      const response = await fetch('http://localhost:3001/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: prompt + JSON.stringify(data, null, 2),
+          model: model,
+          temperature: temperature,
+          max_tokens: maxTokens,
+          data: data,
+        }),
+      });
+      const jsonResponse = await response.json();
+      return jsonResponse;
+    }
+  };
+
   const [companyName, setCompanyName] = useState<string | null>(null);
   const [currentDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
@@ -25,6 +74,10 @@ function App() {
   const [jsonGenderCampaign, setJsonGenderCampaign] = useState<DataStructureGenderCampaign>({});
   const [jsonAgeRangeAdGroup, setJsonAgeRangeAdGroup] = useState<DataStructureAgeRangeAdGroup>({});
   const [jsonAgeRangeCampaign, setJsonAgeRangeCampaign] = useState<DataStructureAgeRangeCampaign>({});
+
+  const [csvSummaryAlias, setCsvSummaryAlias] = useState<File>();
+  const [csvDeviceAlias, setCsvDeviceAlias] = useState<File>();
+  const [csvDayAlias, setCsvDayAlias] = useState<File>();
 
   const promptSummary: string = `${parameterLanguage}` + `${parameterTone}` + `Schrijf een korte samenvatting op basis van de volgende data. Dit is Google Ads data van alle campagnes van het bedrijf ${companyName}. Schijf eerst op één regel enkel de cijfers als concrete waarders met een label ervoor, en schrijf daaronder een korte alinea ter samenvatting van bovenstaande cijfers. Schrijf geen titel boven de tekst, en vermijd markdown syntax.`;
   const promptAge: string =
@@ -50,6 +103,38 @@ function App() {
     }
   }, [response, companyName, currentDate]);
 
+  useEffect(() => {
+    const startRequestChain = async () => {
+      if (jsonAgeRangeCampaign && Object.keys(jsonAgeRangeCampaign).length > 0 && jsonGenderCampaign && Object.keys(jsonGenderCampaign).length > 0) {
+        console.log('jsonAgeRangeCampaign has data: ', jsonAgeRangeCampaign);
+        if (!csvSummaryAlias || !csvDeviceAlias || !csvDayAlias) {
+          console.log('Een van de aliassen was leeg.');
+          return;
+        }
+        try {
+          const responseSummaryPrompt = await makeApiRequests(csvSummaryAlias, promptSummary, 'gpt-4o-mini', 0.5, 250);
+          const responsePromptAge = await makeApiRequests(jsonAgeRangeCampaign, promptAge, 'gpt-4o-mini', 0.2, 2000);
+          const responsePromptGender = await makeApiRequests(jsonGenderCampaign, promptGender, 'gpt-4o-mini', 0.2, 2000);
+          const responsePromptDevices = await makeApiRequests(csvDeviceAlias, promptDevice, 'gpt-4o-mini', 0.2, 2000);
+          const responsePromptDay = await makeApiRequests(csvDayAlias, promptDay, 'gpt-4o-mini', 0.2, 2000);
+
+          setResponse('Samenvatting' + '\n\n' + responseSummaryPrompt.content + '\n\n' + 'Leeftijden' + '\n\n' + responsePromptAge.content + '\n\n' + 'Geslacht' + '\n\n' + responsePromptGender.content + '\n\n' + 'Apparaten' + '\n\n' + responsePromptDevices.content + '\n\n' + 'Dag en Tijd' + '\n\n' + responsePromptDay.content);
+        } catch (error) {
+          console.error('Error:', error);
+        } finally {
+          setIsUploading(false);
+        }
+      }
+    };
+    startRequestChain();
+  }, [jsonAgeRangeCampaign, jsonGenderCampaign]);
+
+  /*
+  useEffect(() => {
+    console.log('jsonGenderCampaign has been changed: ' + JSON.stringify(jsonGenderCampaign, null, 2));
+  }, [jsonGenderCampaign]);
+  */
+
   const handleClick = async () => {
     setIsUploading(true);
     if (dataBatch.length === 0) {
@@ -62,14 +147,17 @@ function App() {
       const file = dataBatch.find((file) => file.name === fileName);
       return file;
     };
+
     const csvSummary = getFileByName('report_summary.csv');
+    setCsvSummaryAlias(csvSummary);
     const csvGenderCampaign = getFileByName('report_gender_campaign.csv');
     const csvGenderAdGroup = getFileByName('report_gender_adgroup.csv');
     const csvAgeRangeCampaign = getFileByName('report_age_range_campaign.csv');
     const csvAgeRangeAdGroup = getFileByName('report_age_range_adgroup.csv');
     const csvDevice = getFileByName('report_device.csv');
+    setCsvDeviceAlias(csvDevice);
     const csvDay = getFileByName('report_day.csv');
-
+    setCsvDayAlias(csvDay);
     if (!csvSummary || !csvGenderCampaign || !csvGenderAdGroup || !csvAgeRangeCampaign || !csvAgeRangeAdGroup || !csvDevice || !csvDay) {
       if (!csvSummary) {
         console.log(`Bestand "report_summary.csv" niet gevonden.`);
@@ -90,6 +178,7 @@ function App() {
       }
       return;
     }
+
     if (parameterAnalyzeLevel == 'campaignLevel') {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -110,69 +199,6 @@ function App() {
       CsvParserAgeRangeAdGroup(csvAgeRangeAdGroup, setJsonAgeRangeAdGroup);
     } else {
       alert('Niveau van analyse niet gevonden.');
-    }
-
-    try {
-      const request = async (data: File | DataStructureGenderCampaign | DataStructureGenderAdGroup | DataStructureAgeRangeCampaign | DataStructureAgeRangeAdGroup, prompt: string, model: string, temperature: number, maxTokens: number) => {
-        if (data instanceof File) {
-          if (data.name === 'report_summary.csv' || data.name === 'report_device.csv' || data.name === 'report_day.csv') {
-            let csvText: string = '';
-            csvText += await data.text();
-            console.log('---');
-            console.log('Prompt: ' + prompt);
-            console.log('Given data: ' + csvText);
-            const response = await fetch('http://localhost:3001/chat', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                message: prompt + csvText,
-                model: model,
-                temperature: temperature,
-                max_tokens: maxTokens,
-                data: data,
-              }),
-            });
-            const fileResponse = await response.json();
-            return fileResponse;
-          } else {
-            console.log('Er ging iets mis bij het request met ' + data.name);
-            return;
-          }
-        } else {
-          console.log('---');
-          console.log('Prompt: ' + prompt);
-          console.log('Given data: ' + JSON.stringify(data));
-          const response = await fetch('http://localhost:3001/chat', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              message: prompt + '\n\nInterpreteer het als JSON formaat:\n' + (JSON.stringify(data), null, 2),
-              model: model,
-              temperature: temperature,
-              max_tokens: maxTokens,
-              data: data,
-            }),
-          });
-          const jsonResponse = await response.json();
-          return jsonResponse;
-        }
-      };
-
-      const responseSummaryPrompt = await request(csvSummary, promptSummary, 'gpt-4o-2024-08-06', 0.5, 250);
-      const responsePromptAge = await request(jsonAgeRangeCampaign, promptAge, 'gpt-4o-2024-08-06', 0.2, 2000);
-      const responsePromptGender = await request(jsonGenderCampaign, promptGender, 'gpt-4o-2024-08-06', 0.2, 2000);
-      const responsePromptDevices = await request(csvDevice, promptDevice, 'gpt-4o-2024-08-06', 0.2, 2000);
-      const responsePromptDay = await request(csvDay, promptDay, 'gpt-4o-2024-08-06', 0.2, 2000);
-
-      setResponse('Samenvatting' + '\n\n' + responseSummaryPrompt.content + '\n\n' + 'Leeftijden' + '\n\n' + responsePromptAge.content + '\n\n' + 'Geslacht' + '\n\n' + responsePromptGender.content + '\n\n' + 'Apparaten' + '\n\n' + responsePromptDevices.content + '\n\n' + 'Dag en Tijd' + '\n\n' + responsePromptDay.content);
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setIsUploading(false);
     }
   };
 
