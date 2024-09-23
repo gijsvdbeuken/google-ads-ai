@@ -8,94 +8,127 @@ import logo from '/logo.png';
 import './App.css';
 
 function App() {
-  const makeApiRequests = async (data: File | DataStructureGenderCampaign | DataStructureGenderAdGroup | DataStructureAgeRangeCampaign | DataStructureAgeRangeAdGroup, prompt: string, model: string, temperature: number, maxTokens: number) => {
+  const [companyName, setCompanyName] = useState<string | null>(null);
+  const [currentDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [parameterLanguage, setParameterLanguage] = useState<string>('');
+  const [parameterTone, setParameterTone] = useState<string>('');
+  const [parameterAnalyzeLevel, setParameterAnalyzeLevel] = useState<string>('campaignLevel');
+  const [parameterKpc, setParameterKpc] = useState<string>('');
+  const [parameterAdditions, setParameterAdditions] = useState<string>('');
+  const [dataBatch, setDataBatch] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [response, setResponse] = useState('');
+  const [jsonGenderAdGroup, setJsonGenderAdGroup] = useState<DataStructureGenderAdGroup>({});
+  const [jsonGenderCampaign, setJsonGenderCampaign] = useState<DataStructureGenderCampaign>({});
+  const [jsonAgeRangeAdGroup, setJsonAgeRangeAdGroup] = useState<DataStructureAgeRangeAdGroup>({});
+  const [jsonAgeRangeCampaign, setJsonAgeRangeCampaign] = useState<DataStructureAgeRangeCampaign>({});
+  const [csvSummaryAlias, setCsvSummaryAlias] = useState<File>();
+  const [csvDeviceAlias, setCsvDeviceAlias] = useState<File>();
+  const [csvDayAlias, setCsvDayAlias] = useState<File>();
+
+  const promptSummary: string =
+    `${parameterLanguage}` +
+    `${parameterTone}` +
+    `Schrijf een korte samenvatting op basis van de volgende data. Dit is Google Ads data van alle campagnes van het bedrijf ${companyName}. Schijf eerst op één regel enkel de cijfers als concrete waarders met een label ervoor, en schrijf daaronder een korte alinea ter samenvatting van bovenstaande cijfers. Schrijf geen titel boven de tekst, en vermijd markdown syntax. Geef bij elke waarde de eenheid aan, bijvoorbeeld "€5" of "10%".` +
+    `${parameterAdditions}`;
+  const promptAge: string =
+    `${parameterLanguage}` +
+    `${parameterTone}` +
+    `Schrijf één korte alinea per campagne aanwezig in de volgende dataset over leeftijden. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers. Onthoud dat "Onbekend" ook een vaide categorie is, en dat je deze moet meerekenen. ` +
+    (parameterKpc.length > 0 ? ` Onthoud dat de gemiddelde kosten per conversie over het gehele bedrijf ${parameterKpc} bedragen, dus gebruik die waarde als ankerpunt.` : '') +
+    `Geef tot slot advies m.b.t. Refereer alleen naar cijfers die je kan aflezen, ga dus niet zelf berekeningen maken. Schrijf geen titel boven de tekst maar duid deze in de alinea aan, en vermijd markdown syntax. Geef bij elke waarde de eenheid aan, bijvoorbeeld "€5" of "10%".` +
+    `${parameterAdditions}`;
+  const promptGender: string =
+    `${parameterLanguage}` +
+    `${parameterTone}` +
+    `Schrijf één korte alinea per campagne aanwezig in de volgende dataset over genders. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers.` +
+    (parameterKpc.length > 0 ? ` Onthoud dat de gemiddelde kosten per conversie over het gehele bedrijf ${parameterKpc} bedragen, dus gebruik die waarde als ankerpunt.` : '') +
+    `Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Refereer alleen naar cijfers die je kan aflezen, ga dus niet zelf berekeningen maken. Schrijf geen titel boven de tekst maar duid deze in de alinea aan, en vermijd markdown syntax. Geef bij elke waarde de eenheid aan, bijvoorbeeld "€5" of "10%".` +
+    `${parameterAdditions}`;
+  const promptDevice: string =
+    `${parameterLanguage}` +
+    `${parameterTone}` +
+    `Schrijf één korte alinea per campagne aanwezig in de volgende dataset over apparaten. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers.` +
+    (parameterKpc.length > 0 ? ` Onthoud dat de gemiddelde kosten per conversie over het gehele bedrijf ${parameterKpc} bedragen, dus gebruik die waarde als ankerpunt.` : '') +
+    `Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Refereer alleen naar cijfers die je kan aflezen, ga dus niet zelf berekeningen maken. Schrijf geen titel boven de tekst maar duid deze in de alinea aan, en vermijd markdown syntax. Geef bij elke waarde de eenheid aan, bijvoorbeeld "€5" of "10%".` +
+    `${parameterAdditions}`;
+  const promptDay: string =
+    `${parameterLanguage}` +
+    `${parameterTone}` +
+    `Schrijf één korte alinea per campagne aanwezig in de volgende dataset over dagen. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers.` +
+    (parameterKpc.length > 0 ? ` Onthoud dat de gemiddelde kosten per conversie over het gehele bedrijf ${parameterKpc} bedragen, dus gebruik die waarde als ankerpunt.` : '') +
+    `Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Refereer alleen naar cijfers die je kan aflezen, ga dus niet zelf berekeningen maken. Schrijf geen titel boven de tekst maar duid deze in de alinea aan, en vermijd markdown syntax. Geef bij elke waarde de eenheid aan, bijvoorbeeld "€5" of "10%".` +
+    `${parameterAdditions}`;
+
+  const adGroupPrompt: string = `${parameterLanguage}` + `${parameterTone}` + `Schrijf een analyze van alle advertentiegroepen binnen het bedrijf ${companyName} op basis van de volgende data.` + `${parameterAdditions}`;
+
+  const apiRequest = async (data: File | DataStructureGenderCampaign | DataStructureGenderAdGroup | DataStructureAgeRangeCampaign | DataStructureAgeRangeAdGroup, prompt: string, model: string, temperature: number, maxTokens: number) => {
+    let csvText: string = '';
     if (data instanceof File) {
-      if (data.name === 'report_summary.csv' || data.name === 'report_device.csv' || data.name === 'report_day.csv') {
-        let csvText: string = '';
-        csvText += await data.text();
-        console.log('---');
-        console.log('Prompt: ' + prompt);
-        console.log('Given data extracted from file type: ' + csvText);
-        const response = await fetch('http://localhost:3001/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: prompt + csvText,
-            model: model,
-            temperature: temperature,
-            max_tokens: maxTokens,
-            data: data,
-          }),
-        });
-        const fileResponse = await response.json();
-        return fileResponse;
-      } else {
-        console.log('Er ging iets mis bij het request met ' + data.name);
-        return;
-      }
-    } else {
-      console.log('---');
-      console.log('Prompt: ' + prompt);
-      console.log('Given data extracted from datastructure type: ' + JSON.stringify(data, null, 2));
+      csvText += await data.text();
+    }
+    try {
       const response = await fetch('http://localhost:3001/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: prompt + JSON.stringify(data, null, 2),
+          message: prompt + (data instanceof File ? csvText : JSON.stringify(data, null, 2)),
           model: model,
           temperature: temperature,
           max_tokens: maxTokens,
           data: data,
         }),
       });
-      const jsonResponse = await response.json();
-      return jsonResponse;
+      const dataResponse = await response.json();
+      return dataResponse;
+    } catch (error) {
+      console.error('Something went wrong while making the request: ' + error);
     }
   };
 
-  const [companyName, setCompanyName] = useState<string | null>(null);
-  const [currentDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  useEffect(() => {
+    const makeApiRequests = async () => {
+      if (parameterAnalyzeLevel === 'campaignLevel') {
+        if (jsonAgeRangeCampaign && Object.keys(jsonAgeRangeCampaign).length > 0 && jsonGenderCampaign && Object.keys(jsonGenderCampaign).length > 0) {
+          if (!csvSummaryAlias || !csvDeviceAlias || !csvDayAlias) {
+            console.log('Een van de aliassen was leeg.');
+            return;
+          }
+          try {
+            const responseSummaryPrompt = await apiRequest(csvSummaryAlias, promptSummary, 'gpt-4o-mini', 0.5, 250);
+            const responsePromptAge = await apiRequest(jsonAgeRangeCampaign, promptAge, 'gpt-4o-2024-08-06', 0.2, 2000);
+            const responsePromptGender = await apiRequest(jsonGenderCampaign, promptGender, 'gpt-4o-2024-08-06', 0.2, 2000);
+            const responsePromptDevices = await apiRequest(csvDeviceAlias, promptDevice, 'gpt-4o-mini', 0.2, 2000);
+            const responsePromptDay = await apiRequest(csvDayAlias, promptDay, 'gpt-4o-mini', 0.2, 2000);
 
-  const [parameterLanguage, setParameterLanguage] = useState<string>('');
-  const [parameterTone, setParameterTone] = useState<string>('');
-  const [parameterAnalyzeLevel, setParameterAnalyzeLevel] = useState<string>('campaignLevel');
-
-  const [dataBatch, setDataBatch] = useState<File[]>([]);
-  const [amountOfCampaigns, setAmountOfCampaigns] = useState<number>(0);
-
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [response, setResponse] = useState('');
-
-  const [jsonGenderAdGroup, setJsonGenderAdGroup] = useState<DataStructureGenderAdGroup>({});
-  const [jsonGenderCampaign, setJsonGenderCampaign] = useState<DataStructureGenderCampaign>({});
-  const [jsonAgeRangeAdGroup, setJsonAgeRangeAdGroup] = useState<DataStructureAgeRangeAdGroup>({});
-  const [jsonAgeRangeCampaign, setJsonAgeRangeCampaign] = useState<DataStructureAgeRangeCampaign>({});
-
-  const [csvSummaryAlias, setCsvSummaryAlias] = useState<File>();
-  const [csvDeviceAlias, setCsvDeviceAlias] = useState<File>();
-  const [csvDayAlias, setCsvDayAlias] = useState<File>();
-
-  const promptSummary: string = `${parameterLanguage}` + `${parameterTone}` + `Schrijf een korte samenvatting op basis van de volgende data. Dit is Google Ads data van alle campagnes van het bedrijf ${companyName}. Schijf eerst op één regel enkel de cijfers als concrete waarders met een label ervoor, en schrijf daaronder een korte alinea ter samenvatting van bovenstaande cijfers. Schrijf geen titel boven de tekst, en vermijd markdown syntax.`;
-  const promptAge: string =
-    `${parameterLanguage}` +
-    `${parameterTone}` +
-    `Schrijf één korte alinea over de leeftijden data voor elk van de volgende campagnes. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers. Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Refereer alleen naar cijfers die je kan aflezen, ga dus niet zelf berekeningen maken. Schrijf geen titel boven de tekst maar duid deze in de alinea aan, en vermijd markdown syntax.`;
-  const promptGender: string =
-    `${parameterLanguage}` +
-    `${parameterTone}` +
-    `Schrijf één korte alinea over de gender data voor elk van de volgende campagnes. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers. Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Refereer alleen naar cijfers die je kan aflezen, ga dus niet zelf berekeningen maken. Schrijf geen titel boven de tekst maar duid deze in de alinea aan, en vermijd markdown syntax.`;
-  const promptDevice: string =
-    `${parameterLanguage}` +
-    `${parameterTone}` +
-    `Schrijf één korte alinea over de apparaten data voor elk van de volgende campagnes. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers. Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Refereer alleen naar cijfers die je kan aflezen, ga dus niet zelf berekeningen maken. Schrijf geen titel boven de tekst maar duid deze in de alinea aan, en vermijd markdown syntax.`;
-  const promptDay: string =
-    `${parameterLanguage}` +
-    `${parameterTone}` +
-    `Schrijf één korte alinea over de weekdagen data voor elk van de volgende campagnes. Je verteld voornamelijk over de conversie-cijfers indien je hier data van hebt, wanneer dit niet het geval is vertel je voornamelijk over de CTR cijfers. Geef tot slot advies m.b.t. procentuele bodaanpassing aan het eind van de alinea. Refereer alleen naar cijfers die je kan aflezen, ga dus niet zelf berekeningen maken. Schrijf geen titel boven de tekst maar duid deze in de alinea aan, en vermijd markdown syntax.`;
+            setResponse('Samenvatting' + '\n\n' + responseSummaryPrompt.content + '\n\n' + 'Leeftijden' + '\n\n' + responsePromptAge.content + '\n\n' + 'Geslacht' + '\n\n' + responsePromptGender.content + '\n\n' + 'Apparaten' + '\n\n' + responsePromptDevices.content + '\n\n' + 'Dag en Tijd' + '\n\n' + responsePromptDay.content);
+          } catch (error) {
+            console.error('Error:', error);
+          } finally {
+            setIsUploading(false);
+          }
+        }
+      } else if (parameterAnalyzeLevel === 'adGroupLevel') {
+        if (jsonAgeRangeAdGroup && Object.keys(jsonAgeRangeAdGroup).length > 0 && jsonGenderAdGroup && Object.keys(jsonGenderAdGroup).length > 0) {
+          try {
+            // DOESN'T RECEIVE RIGHT DATA YET
+            const responsePromptAdGroup = await apiRequest(jsonAgeRangeAdGroup, adGroupPrompt, 'gpt-4o-2024-08-06', 0.2, 225);
+            setResponse('Samenvatting' + '\n\n' + responsePromptAdGroup.content);
+          } catch (error) {
+            console.error('Error:', error);
+          } finally {
+            setIsUploading(false);
+          }
+        }
+      } else {
+        console.error('Analysis level not found.');
+        return;
+      }
+    };
+    makeApiRequests();
+  }, [jsonAgeRangeCampaign, jsonGenderCampaign, jsonAgeRangeCampaign, jsonGenderAdGroup]);
 
   useEffect(() => {
     if (response) {
@@ -103,102 +136,45 @@ function App() {
     }
   }, [response, companyName, currentDate]);
 
-  useEffect(() => {
-    const startRequestChain = async () => {
-      if (jsonAgeRangeCampaign && Object.keys(jsonAgeRangeCampaign).length > 0 && jsonGenderCampaign && Object.keys(jsonGenderCampaign).length > 0) {
-        console.log('jsonAgeRangeCampaign has data: ', jsonAgeRangeCampaign);
-        if (!csvSummaryAlias || !csvDeviceAlias || !csvDayAlias) {
-          console.log('Een van de aliassen was leeg.');
-          return;
-        }
-        try {
-          const responseSummaryPrompt = await makeApiRequests(csvSummaryAlias, promptSummary, 'gpt-4o-mini', 0.5, 250);
-          const responsePromptAge = await makeApiRequests(jsonAgeRangeCampaign, promptAge, 'gpt-4o-mini', 0.2, 2000);
-          const responsePromptGender = await makeApiRequests(jsonGenderCampaign, promptGender, 'gpt-4o-mini', 0.2, 2000);
-          const responsePromptDevices = await makeApiRequests(csvDeviceAlias, promptDevice, 'gpt-4o-mini', 0.2, 2000);
-          const responsePromptDay = await makeApiRequests(csvDayAlias, promptDay, 'gpt-4o-mini', 0.2, 2000);
-
-          setResponse('Samenvatting' + '\n\n' + responseSummaryPrompt.content + '\n\n' + 'Leeftijden' + '\n\n' + responsePromptAge.content + '\n\n' + 'Geslacht' + '\n\n' + responsePromptGender.content + '\n\n' + 'Apparaten' + '\n\n' + responsePromptDevices.content + '\n\n' + 'Dag en Tijd' + '\n\n' + responsePromptDay.content);
-        } catch (error) {
-          console.error('Error:', error);
-        } finally {
-          setIsUploading(false);
-        }
-      }
+  const prepareData = async () => {
+    const getFileByName = (fileName: string) => {
+      const file = dataBatch.find((file) => file.name === fileName);
+      return file;
     };
-    startRequestChain();
-  }, [jsonAgeRangeCampaign, jsonGenderCampaign]);
 
-  /*
-  useEffect(() => {
-    console.log('jsonGenderCampaign has been changed: ' + JSON.stringify(jsonGenderCampaign, null, 2));
-  }, [jsonGenderCampaign]);
-  */
-
-  const handleClick = async () => {
     setIsUploading(true);
+
     if (dataBatch.length === 0) {
       alert('Geen bestanden geselecteerd.');
       setIsUploading(false);
       return;
     }
 
-    const getFileByName = (fileName: string) => {
-      const file = dataBatch.find((file) => file.name === fileName);
-      return file;
-    };
-
     const csvSummary = getFileByName('report_summary.csv');
     setCsvSummaryAlias(csvSummary);
-    const csvGenderCampaign = getFileByName('report_gender_campaign.csv');
-    const csvGenderAdGroup = getFileByName('report_gender_adgroup.csv');
-    const csvAgeRangeCampaign = getFileByName('report_age_range_campaign.csv');
-    const csvAgeRangeAdGroup = getFileByName('report_age_range_adgroup.csv');
     const csvDevice = getFileByName('report_device.csv');
     setCsvDeviceAlias(csvDevice);
     const csvDay = getFileByName('report_day.csv');
     setCsvDayAlias(csvDay);
-    if (!csvSummary || !csvGenderCampaign || !csvGenderAdGroup || !csvAgeRangeCampaign || !csvAgeRangeAdGroup || !csvDevice || !csvDay) {
-      if (!csvSummary) {
-        console.log(`Bestand "report_summary.csv" niet gevonden.`);
-      } else if (!csvGenderCampaign) {
-        console.log(`Bestand "report_gender_campaign.csv" niet gevonden.`);
-      } else if (!csvGenderAdGroup) {
-        console.log(`Bestand "report_gender_adgroup.csv" niet gevonden.`);
-      } else if (!csvAgeRangeCampaign) {
-        console.log(`Bestand "report_age_range_campaign.csv" niet gevonden.`);
-      } else if (!csvAgeRangeAdGroup) {
-        console.log(`Bestand "report_age_range_adgroup.csv" niet gevonden.`);
-      } else if (!csvDevice) {
-        console.log(`Bestand "report_device.csv" niet gevonden.`);
-      } else if (!csvDay) {
-        console.log(`Bestand "report_day.csv" niet gevonden.`);
-      } else {
-        console.log(`Er ging iets mis bij het vinden van de bestanden op basis van bestandsnaam.`);
-      }
+
+    const csvGenderCampaign = getFileByName('report_gender_campaign.csv');
+    const csvGenderAdGroup = getFileByName('report_gender_adgroup.csv');
+    const csvAgeRangeCampaign = getFileByName('report_age_range_campaign.csv');
+    const csvAgeRangeAdGroup = getFileByName('report_age_range_adgroup.csv');
+
+    if (!csvGenderCampaign || !csvGenderAdGroup || !csvAgeRangeCampaign || !csvAgeRangeAdGroup) {
+      console.log('Files do not match filename criteria.');
       return;
     }
 
     if (parameterAnalyzeLevel == 'campaignLevel') {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const csvData = e.target?.result as string;
-          const rows = csvData.split('\n');
-          const firstDataRow = rows[1].split(',');
-          const value = parseFloat(firstDataRow[0]);
-          setAmountOfCampaigns(value);
-        } catch (error) {
-          console.error('Er ging iets mis bij het ophalen van het aantal campagnes: ', error);
-        }
-      };
       CsvParserGenderCampaign(csvGenderCampaign, setJsonGenderCampaign);
       CsvParserAgeRangeCampaign(csvAgeRangeCampaign, setJsonAgeRangeCampaign);
     } else if (parameterAnalyzeLevel == 'adGroupLevel') {
       CsvParserGenderAdGroup(csvGenderAdGroup, setJsonGenderAdGroup);
       CsvParserAgeRangeAdGroup(csvAgeRangeAdGroup, setJsonAgeRangeAdGroup);
     } else {
-      alert('Niveau van analyse niet gevonden.');
+      console.error('Analysis level not found.');
     }
   };
 
@@ -211,6 +187,7 @@ function App() {
       <div className="dataForm">
         <label>Bedrijfsnaam</label>
         <input
+          placeholder="Bijv. Geen Gedoe"
           onChange={(e) => {
             setCompanyName(e.target.value);
           }}
@@ -258,27 +235,40 @@ function App() {
             </select>
           </div>
         </div>
-        <div className="x">
-          <label>Analyseniveau</label>
-          <select
-            value={parameterAnalyzeLevel}
-            onChange={(e) => {
-              setParameterAnalyzeLevel(e.target.value);
-            }}
-          >
-            <option value="campaignLevel">Campagne</option>
-            <option value="adGroupLevel">Advertentiegroep</option>
-          </select>
+        <div className="fineTuneContainer">
+          <div className="analyzeLevel">
+            <label>Analyseniveau</label>
+            <select
+              value={parameterAnalyzeLevel}
+              onChange={(e) => {
+                setParameterAnalyzeLevel(e.target.value);
+              }}
+            >
+              <option value="campaignLevel">Campagne</option>
+              <option value="adGroupLevel">Advertentiegroep</option>
+            </select>
+          </div>
+          <div className="costPerConversion">
+            <label>Gem. KPC account</label>
+            <input
+              placeholder="Bijv. 5.50"
+              onChange={(e) => {
+                setParameterKpc(e.target.value);
+              }}
+            ></input>
+          </div>
         </div>
         <label>Toevoegingen (optioneel)</label>
-        <input></input>
+        <input
+          placeholder="Context, informatie, etc."
+          onChange={(e) => {
+            setParameterAdditions(e.target.value);
+          }}
+        ></input>
       </div>
-      <button onClick={handleClick} disabled={isUploading}>
+      <button onClick={prepareData} disabled={isUploading}>
         {isUploading === true ? 'Verwerken, even geduld...' : 'Analyse uitvoeren'}
       </button>
-      <p>Aantal campagnes: {amountOfCampaigns}</p>
-      <pre>{JSON.stringify(jsonGenderAdGroup, null, 2)}</pre>
-      <pre>{JSON.stringify(jsonAgeRangeAdGroup, null, 2)}</pre>
     </div>
   );
 }

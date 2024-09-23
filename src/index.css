@@ -1,19 +1,19 @@
 @font-face {
-  font-family: "Gilroy";
-  src: url("/public/fonts/Gilroy-SemiBold.ttf") format("truetype");
+  font-family: 'Gilroy';
+  src: url('/public/fonts/Gilroy-SemiBold.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
 }
 
 @font-face {
-  font-family: "Gilroy";
-  src: url("/public/fonts/Gilroy-Medium.ttf") format("truetype");
+  font-family: 'Gilroy';
+  src: url('/public/fonts/Gilroy-Medium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
 }
 
 :root {
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   line-height: 1.5;
   font-weight: 400;
 
@@ -58,7 +58,7 @@ form {
 }
 
 label {
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   font-weight: 600;
   font-size: 16px;
 }
@@ -68,14 +68,14 @@ label:focus-visible {
 }
 
 span {
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   font-weight: 500;
   font-size: 16px;
   padding: 10px 0px 0px 0px;
 }
 
 button {
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   font-weight: 600;
   font-size: 16px;
   border-radius: 5px;
@@ -109,14 +109,14 @@ input {
   box-sizing: border-box;
   background-color: rgba(255, 255, 255, 0.2);
   border: 2px solid transparent;
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   font-weight: 500;
   font-size: 16px;
   transition: border-color 0.25s;
 }
 
 h1 {
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   font-weight: 600;
   font-size: 20;
 }
@@ -127,7 +127,7 @@ input:focus {
 }
 
 pre {
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   font-weight: 500;
   line-height: 1.5;
 }
@@ -143,7 +143,7 @@ a:hover {
 }
 
 small {
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   font-weight: 500;
   font-size: 12px;
   opacity: 0.75;
@@ -152,7 +152,7 @@ small {
 
 textArea {
   border-style: none;
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   font-weight: 500;
   font-size: 16px;
   width: 100%;
@@ -167,7 +167,7 @@ textArea {
 
 select {
   border-style: none;
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   font-weight: 600;
   font-size: 16px;
   width: 100%;
@@ -201,7 +201,7 @@ img.logo {
 
 .fileInput {
   border: 2px solid rgba(255, 255, 255, 0.5);
-  font-family: "Gilroy";
+  font-family: 'Gilroy';
   font-weight: 600;
   color: #faf3ed;
   padding: 15px 10px;
@@ -261,6 +261,24 @@ img.logo {
   justify-content: space-between; /* Spreads items apart */
 }
 
-input[type="file"]::-webkit-file-upload-button {
+.analyzeLevel {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+.costPerConversion {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+input[type='file']::-webkit-file-upload-button {
   display: none;
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
 }
