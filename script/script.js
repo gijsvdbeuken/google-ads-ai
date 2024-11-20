@@ -2,6 +2,7 @@ function main() {
   var startDate = '20240701'; // Formaat: JJJJMMDD
   var endDate = '20240731'; // Formaat: JJJJMMDD
   var emailRecipient = 'gijs@kantoor.geen-gedoe.nl'; // Ontvanger
+
   var ageRangeCsvData = [],
     ageRangeSummaryCsvData = [],
     deviceCsvData = [],
@@ -22,6 +23,7 @@ function main() {
   genderSummaryCsvData.push(['CampagneNaam', 'Gender', 'TotaalImpressies', 'TotaalKliks', 'TotaalKosten', 'TotaalConversies', 'GemiddeldeCTR', 'GemiddeldeCPC', 'GemiddeldeKostenPerConversie'].join(','));
   dayCsvData.push(['CampagneNaam', 'DagVanDeWeek', 'Impressies', 'Kliks', 'CTR', 'Kosten', 'Conversies', 'KostenPerConversie'].join(','));
   summaryCsvData.push(['AantalCampagnes', 'KliksTotaal', 'ImpressiesTotaal', 'KostenTotaal', 'ConversiesTotaal', 'CTR_Gemiddeld', 'CPC_Gemiddeld', 'KostenPerConversie_Gemiddeld'].join(','));
+
   // AGE RANGE & AGE RANGE SUMMARY REPORT
 
   var ageRangeReport = AdsApp.report('SELECT CampaignName, AdGroupName, Criteria, Impressions, Clicks, Cost, Conversions ' + 'FROM AGE_RANGE_PERFORMANCE_REPORT ' + "WHERE Impressions > 0 AND CampaignStatus = 'ENABLED'" + 'DURING ' + startDate.replace(/-/g, '') + ',' + endDate.replace(/-/g, ''));

@@ -1,4 +1,4 @@
-import { Document, Packer, Paragraph, TextRun } from 'docx';
+import { Document, Packer, Paragraph, TextRun, PageBreak } from 'docx';
 import { saveAs } from 'file-saver';
 
 export const rapportGenerator = (text: string, companyName: string | null, currentDate: string) => {
@@ -66,10 +66,16 @@ export const rapportGenerator = (text: string, companyName: string | null, curre
             ],
           }),
           new Paragraph({}),
-          ...paragraphs.flatMap((paragraph) => {
-            const isTitle = paragraph === 'Samenvatting' || paragraph === 'Leeftijden' || paragraph === 'Geslacht' || paragraph === 'Apparaten' || paragraph === 'Dag en Tijd';
+          ...paragraphs.flatMap((paragraph, index) => {
+            const isTitle = paragraph === 'Samenvatting' || paragraph === 'Leeftijden' || paragraph === 'Geslacht' || paragraph === 'Apparaten' || paragraph === 'Dag en Tijd' || paragraph === 'Debriefing';
 
-            return [
+            const elements = [];
+
+            if (isTitle && index !== 0) {
+              elements.push(new Paragraph({ children: [new PageBreak()] }));
+            }
+
+            elements.push(
               new Paragraph({
                 children: [
                   new TextRun({
@@ -81,8 +87,10 @@ export const rapportGenerator = (text: string, companyName: string | null, curre
                   }),
                 ],
               }),
-              new Paragraph({ text: '' }),
-            ];
+              new Paragraph({ text: '' })
+            );
+
+            return elements;
           }),
         ],
       },
