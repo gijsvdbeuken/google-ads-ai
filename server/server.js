@@ -2,8 +2,6 @@ import express from "express";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 
-// gpt-4o-2024-08-06
-
 dotenv.config();
 
 const app = express();

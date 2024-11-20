@@ -5,41 +5,41 @@ import { CsvParserGenderCampaign, DataStructureGenderCampaign } from './utilitie
 import { CsvParserAgeRangeCampaign, DataStructureAgeRangeCampaign } from './utilities/CsvParserAgeRangeCampaign';
 import { CsvParserAgeRangeAdGroup, DataStructureAgeRangeAdGroup } from './utilities/CsvParserAgeRangeAdGroup';
 import { createSummaryPrompt, createParagraphPrompt, getDebriefingPrompt } from './utilities/CreatePrompts';
+import { apiRequest } from './utilities/ApiService';
 import './App.css';
 
 function App() {
-  const [companyName, setCompanyName] = useState<string>('');
-  const [currentDate] = useState<string>(new Date().toISOString().split('T')[0]);
-
-  const [parameterLanguage, setParameterLanguage] = useState<string>('');
-  const [parameterTone, setParameterTone] = useState<string>('');
-  const [parameterAnalyzeLevel, setParameterAnalyzeLevel] = useState<string>('campaignLevel');
-  const [parameterKpc, setParameterKpc] = useState<string>('');
-  const [parameterAdditions, setParameterAdditions] = useState<string>('');
-
+  const [company, setCompany] = useState<string>('');
+  const [date] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [language, setLanguage] = useState<string>('');
+  const [tone, setTone] = useState<string>('');
+  const [analyzeLevel, setAnalyzeLevel] = useState<string>('campaignLevel');
+  const [kpc, setKpc] = useState<string>('');
+  const [additions, setAdditions] = useState<string>('');
   const [dataBatch, setDataBatch] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [response, setResponse] = useState('');
-
   const [jsonGenderAdGroup, setJsonGenderAdGroup] = useState<DataStructureGenderAdGroup>({});
   const [jsonGenderCampaign, setJsonGenderCampaign] = useState<DataStructureGenderCampaign>({});
   const [jsonAgeRangeAdGroup, setJsonAgeRangeAdGroup] = useState<DataStructureAgeRangeAdGroup>({});
   const [jsonAgeRangeCampaign, setJsonAgeRangeCampaign] = useState<DataStructureAgeRangeCampaign>({});
-
-  const [csvSummaryAlias, setCsvSummaryAlias] = useState<File>();
-  const [csvDeviceAlias, setCsvDeviceAlias] = useState<File>();
-  const [csvDayAlias, setCsvDayAlias] = useState<File>();
-  const [csvAdGroupAlias, setCsvAdGroupAlias] = useState<File>();
-
   const [process, setProcess] = useState<string>('Verwerken...');
-
-  const summaryPrompt: string = createSummaryPrompt(parameterLanguage, parameterTone, companyName, parameterAdditions);
-  const paragraphPrompt: string = createParagraphPrompt(parameterLanguage, parameterTone, parameterKpc, parameterAdditions);
+  const [dots, setDots] = useState('.');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const summaryPrompt: string = createSummaryPrompt(language, tone, company, additions);
+  const paragraphPrompt: string = createParagraphPrompt(language, tone, kpc, additions);
   const debriefingPrompt: string = getDebriefingPrompt();
 
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const getFileByName = (fileName: string) => {
+    const file = dataBatch.find((file) => file.name === fileName);
+    return file;
+  };
 
-  const [dots, setDots] = useState('.');
+  const csvSummary = getFileByName('report_summary.csv');
+  const csvDevice = getFileByName('report_device.csv');
+  const csvDay = getFileByName('report_day.csv');
+  const csvAdGroup = getFileByName('report_adgroup.csv');
+
   useEffect(() => {
     const interval = setInterval(() => {
       setDots((prev) => (prev.length < 3 ? prev + '.' : '.'));
@@ -47,54 +47,25 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const apiRequest = async (data: String | File | DataStructureGenderCampaign | DataStructureGenderAdGroup | DataStructureAgeRangeCampaign | DataStructureAgeRangeAdGroup, prompt: string, model: string, temperature: number, maxTokens: number) => {
-    let csvText: string = '';
-    if (data instanceof String) {
-      csvText += await data;
-    }
-    if (data instanceof File) {
-      csvText += await data.text();
-    }
-    try {
-      const response = await fetch('http://localhost:3001/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: prompt + (data instanceof File || data instanceof String ? csvText : JSON.stringify(data, null, 2)),
-          model: model,
-          temperature: temperature,
-          max_tokens: maxTokens,
-          data: data,
-        }),
-      });
-      const dataResponse = await response.json();
-      return dataResponse;
-    } catch (error) {
-      console.error('Something went wrong while making the request: ' + error);
-    }
-  };
-
   useEffect(() => {
     const makeApiRequests = async () => {
-      if (parameterAnalyzeLevel === 'campaignLevel') {
+      if (analyzeLevel === 'campaignLevel') {
         if (jsonAgeRangeCampaign && Object.keys(jsonAgeRangeCampaign).length > 0 && jsonGenderCampaign && Object.keys(jsonGenderCampaign).length > 0) {
-          if (!csvSummaryAlias || !csvDeviceAlias || !csvDayAlias) {
+          if (!csvSummary || !csvDevice || !csvDay) {
             console.log('Een van de aliassen was leeg.');
             return;
           }
           try {
             setProcess('Samenvatting creëren');
-            const resSummary = await apiRequest(csvSummaryAlias, summaryPrompt, 'gpt-4o-mini', 0.5, 250);
+            const resSummary = await apiRequest(csvSummary, summaryPrompt, 'gpt-4o-mini', 0.5, 250);
             setProcess(`Alinea's over leeftijden genereren`);
-            const resAge = await apiRequest(jsonAgeRangeCampaign, paragraphPrompt, 'gpt-4o', 0.2, 2000);
+            const resAge = await apiRequest(jsonAgeRangeCampaign, paragraphPrompt, 'gpt-4o-mini', 0.2, 2000);
             setProcess(`Alinea's over geslacht genereren`);
-            const resGender = await apiRequest(jsonGenderCampaign, paragraphPrompt, 'gpt-4o', 0.2, 2000);
+            const resGender = await apiRequest(jsonGenderCampaign, paragraphPrompt, 'gpt-4o-mini', 0.2, 2000);
             setProcess(`Alinea's over apparaten genereren`);
-            const resDevices = await apiRequest(csvDeviceAlias, paragraphPrompt, 'gpt-4o', 0.2, 2000);
+            const resDevices = await apiRequest(csvDevice, paragraphPrompt, 'gpt-4o-mini', 0.2, 2000);
             setProcess(`Alinea's over weekdagen genereren`);
-            const responsePromptDay = await apiRequest(csvDayAlias, paragraphPrompt, 'gpt-4o', 0.2, 2000);
+            const responsePromptDay = await apiRequest(csvDay, paragraphPrompt, 'gpt-4o-mini', 0.2, 2000);
             setProcess(`Debriefing aanmaken`);
             const responseOverview = await apiRequest('Samenvatting' + resSummary.content + 'Leeftijden' + resAge.content + 'Geslacht' + resGender.content + 'Apparaten' + resDevices.content + 'Dag en Tijd' + responsePromptDay.content, debriefingPrompt, 'gpt-4o-2024-08-06', 0.2, 2000);
 
@@ -106,15 +77,15 @@ function App() {
             setIsUploading(false);
           }
         }
-      } else if (parameterAnalyzeLevel === 'adGroupLevel') {
+      } else if (analyzeLevel === 'adGroupLevel') {
         if (jsonAgeRangeAdGroup && Object.keys(jsonAgeRangeAdGroup).length > 0 && jsonGenderAdGroup && Object.keys(jsonGenderAdGroup).length > 0) {
           try {
-            if (!csvAdGroupAlias) {
+            if (!csvAdGroup) {
               console.log('Een van de aliassen was leeg.');
               return;
             }
             setProcess('Samenvatting creëren' + dots);
-            const responsePromptAdGroup = await apiRequest(csvAdGroupAlias, paragraphPrompt, 'gpt-4o-2024-08-06', 0.2, 3000);
+            const responsePromptAdGroup = await apiRequest(csvAdGroup, paragraphPrompt, 'gpt-4o-2024-08-06', 0.2, 3000);
             setResponse('Samenvatting' + '\n\n' + responsePromptAdGroup.content);
           } catch (error) {
             setErrorMessage('Verzoek naar OpenAI API mislukt. Controleer of de server actief is en of de API correct is verbonden.');
@@ -134,22 +105,16 @@ function App() {
   useEffect(() => {
     if (response) {
       try {
-        rapportGenerator(response, companyName, currentDate);
+        rapportGenerator(response, company, date);
       } catch (error) {
         setErrorMessage('Rapport uitschrijven mislukt.');
         console.error('Error:', error);
       }
     }
-  }, [response, companyName, currentDate]);
+  }, [response, company, date]);
 
   const prepareData = async () => {
     setErrorMessage('');
-
-    const getFileByName = (fileName: string) => {
-      const file = dataBatch.find((file) => file.name === fileName);
-      return file;
-    };
-
     setIsUploading(true);
 
     if (dataBatch.length === 0) {
@@ -157,15 +122,6 @@ function App() {
       setIsUploading(false);
       return;
     }
-
-    const csvSummary = getFileByName('report_summary.csv');
-    setCsvSummaryAlias(csvSummary);
-    const csvDevice = getFileByName('report_device.csv');
-    setCsvDeviceAlias(csvDevice);
-    const csvDay = getFileByName('report_day.csv');
-    setCsvDayAlias(csvDay);
-    const csvAdGroup = getFileByName('report_adgroup.csv');
-    setCsvAdGroupAlias(csvAdGroup);
 
     const csvGenderCampaign = getFileByName('report_gender_campaign.csv');
     const csvGenderAdGroup = getFileByName('report_gender_adgroup.csv');
@@ -177,10 +133,10 @@ function App() {
       return;
     }
 
-    if (parameterAnalyzeLevel == 'campaignLevel') {
+    if (analyzeLevel == 'campaignLevel') {
       CsvParserGenderCampaign(csvGenderCampaign, setJsonGenderCampaign);
       CsvParserAgeRangeCampaign(csvAgeRangeCampaign, setJsonAgeRangeCampaign);
-    } else if (parameterAnalyzeLevel == 'adGroupLevel') {
+    } else if (analyzeLevel == 'adGroupLevel') {
       CsvParserGenderAdGroup(csvGenderAdGroup, setJsonGenderAdGroup);
       CsvParserAgeRangeAdGroup(csvAgeRangeAdGroup, setJsonAgeRangeAdGroup);
     } else {
@@ -201,7 +157,7 @@ function App() {
         <input
           placeholder="Bijv. Geen Gedoe"
           onChange={(e) => {
-            setCompanyName(e.target.value);
+            setCompany(e.target.value);
           }}
         ></input>
         <label>
@@ -223,9 +179,9 @@ function App() {
               Teksttaal<span style={{ color: '#e74764' }}>*</span>
             </label>
             <select
-              value={parameterLanguage}
+              value={language}
               onChange={(e) => {
-                setParameterLanguage(e.target.value);
+                setLanguage(e.target.value);
               }}
             >
               <option value="In het nederlands, ">Nederlands</option>
@@ -237,9 +193,9 @@ function App() {
               Teksttoon<span style={{ color: '#e74764' }}>*</span>
             </label>
             <select
-              value={parameterTone}
+              value={tone}
               onChange={(e) => {
-                setParameterTone(e.target.value);
+                setTone(e.target.value);
               }}
             >
               <option value="in formele stijl, ">Formeel</option>
@@ -259,9 +215,9 @@ function App() {
               Analyseniveau<span style={{ color: '#e74764' }}>*</span>
             </label>
             <select
-              value={parameterAnalyzeLevel}
+              value={analyzeLevel}
               onChange={(e) => {
-                setParameterAnalyzeLevel(e.target.value);
+                setAnalyzeLevel(e.target.value);
               }}
             >
               <option value="campaignLevel">Campagne</option>
@@ -273,7 +229,7 @@ function App() {
             <input
               placeholder="Bijv. 5.50"
               onChange={(e) => {
-                setParameterKpc(e.target.value);
+                setKpc(e.target.value);
               }}
             ></input>
           </div>
@@ -282,7 +238,7 @@ function App() {
         <input
           placeholder="Context, informatie, etc."
           onChange={(e) => {
-            setParameterAdditions(e.target.value);
+            setAdditions(e.target.value);
           }}
         ></input>
       </div>
