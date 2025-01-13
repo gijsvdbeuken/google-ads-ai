@@ -1,81 +1,82 @@
-# Geen Gedoe | Google Ads AI
+# Google Ads AI
 
-## 1. Voorbereiding
+## Inhoudsopgave
 
-### 1.1 Benodigde Software Installeren
+1. [Vereisten](#vereisten)  
+2. [Setup](#setup)  
+3. [Gebruik](#gebruik)
 
-Download deze software-onderdelen om de Chrome-extensie te kunnen laten functioneren:
+## Vereisten
 
-- [Node.js](https://nodejs.org/en/download/package-manager)
-- [Git](https://git-scm.com/downloads)
-- [Visual Studio Code (optioneel maar aanbevolen)](https://code.visualstudio.com/download)
+Voor dit project is het aan te raden om de volgende software te installeren:
 
-### 1.2 Verbinden met OpenAI API
+1. **Node.js** – Een JavaScript runtime-omgeving die nodig is om het project te draaien.  
+   - Download het hier: [Node.js](https://nodejs.org/en/download/package-manager)
 
-Volg deze stappen om verbinding te maken met de OpenAI API:
+2. **Git** – Een versiebeheersysteem voor het downloaden en beheren van de projectbestanden.  
+   - Download het hier: [Git](https://git-scm.com/downloads)
 
-1. **OpenAI API-account aanmaken**  
-   Ga naar [OpenAI API](https://openai.com/index/openai-api/) en registreer een account.
+3. **Visual Studio Code (optioneel maar aanbevolen)** – Een krachtige editor voor het bewerken van code.  
+   - Download het hier: [Visual Studio Code](https://code.visualstudio.com/download)
 
-2. **API-sleutel genereren**  
-   In je dashboard, ga naar "User API Keys" en maak een nieuwe API-sleutel aan. Sla deze sleutel veilig op.
+## Setup
 
-3. **Tegoed toevoegen**  
-   Voeg in de "Billing"-sectie van je profiel tegoed toe (meestal volstaat €5 - €10).
+Volg de onderstaande stappen om het project op te zetten:
 
-### 1.3 Chrome-extensie Installeren
+### Stap 1: Downloaden van het project
 
-Volg deze stappen om de Chrome-extensie lokaal te gebruiken:
+1. Ga naar de GitHub-pagina van het project.
+2. Klik op de groene knop **"Code"** en kies **"Download ZIP"**.
+3. Zet het ZIP-bestand op je bureaublad of een andere locatie op je computer.
 
-1. **Map aanmaken**  
-   Creëer een nieuwe map, bijvoorbeeld "Google Ads AI".
+### Stap 2: Het project openen in Visual Studio Code (optioneel)
 
-2. **Terminal openen**  
-   Ga in de terminal naar je nieuw aangemaakte map.
+1. Open **Visual Studio Code** (VSCode).
+2. Sleep de gedownloade folder (de uitgepakte ZIP-bestanden) naar VSCode om het project te openen.
 
-3. **Project importeren**  
-   Voer de volgende commando's een-voor-een uit:
+### Stap 3: Installeren van de benodigde afhankelijkheden
+
+1. Zorg ervoor dat je in VSCode de **Terminal** opent (via **View > Terminal** of `Ctrl + ~`).
+2. Voer het volgende commando uit om de benodigde afhankelijkheden te installeren:
 
    ```bash
    npm install
    ```
 
-   ```bash
-   git init
-   ```
+3. Voer daarna het volgende commando uit om de bestanden te bouwen:
 
    ```bash
-   git remote add origin https://github.com/gijsvdbeuken/google-ads-ai.git
+   npm run build
    ```
+
+### Stap 4: Chrome-extensie toevoegen
+
+1. Na het uitvoeren van de bouwopdracht, wordt er een `dist` map aangemaakt.
+2. Open **Chrome** en ga naar de extensiespagina via `chrome://extensions/`.
+3. Zet de "Developer mode" aan rechtsboven in het scherm.
+4. Klik op de knop **"Load unpacked"** en selecteer de `dist` map die zojuist is aangemaakt.
+
+### Stap 5: Server starten
+
+1. Na het toevoegen van de extensie kun je de server starten door het volgende commando uit te voeren in de terminal:
 
    ```bash
-   git pull origin main
+   node server/server.js
    ```
 
-4. **OpenAI API-sleutel toevoegen**  
-   Maak in de hoofdmap een `.env`-bestand aan en voeg je OpenAI-sleutel op de volgende manier:
+2. Dit start een lokale server waarop de extensie draait.
 
-   ```bash
-   OPENAI_API_KEY="jouw_api_sleutel"
-   ```
+## Gebruik
 
-Houd er rekening mee dat de variabele exact als `OPENAI_API_KEY=""` genoteerd moet zijn zonder spelfouten of andere wijzigingen.
+Na een succesvolle installatie van de Chrome-extensie, kan de extensie worden gebruikt voor het genereren van Google Ads-rapporten. Volg de onderstaande stappen:
 
-5. **Extensie in Chrome laden**  
-   Ga naar **Chrome** > **Extensies beheren**, schakel "Ontwikkelaarsmodus" in, klik op "Uitgepakte extensie laden" en selecteer de "dist"-map.
+### Stap 1: Data ophalen
 
-### 1.4 Google Ads Script Configureren
+1. Open de extensie in **Google Chrome**.
+2. Vul de bedrijfsnaam en de gewenste CSV-gegevens in het daarvoor bestemde veld.
+3. Klik op **"Analyse uitvoeren"** en wacht enkele minuten tot het rapport in je inbox wordt afgeleverd.
 
-1. **Kopieer het script**  
-   Kopieer de code uit `script/script.js`.
-
-2. **Voeg script toe aan Google Ads**  
-   In Google Ads, ga naar **Tools** > **Bulkacties** > **Scripts** en plak de code hierin. Mogelijk wordt je gevraagd om je te autoriseren bij het plakken en uitvoeren van het script.
-
-## 2. Gebruik
-
-1. **Data ophalen**  
-    Pas de specificaties aan in het Google Ads script en klik op "Uitvoeren". Je ontvangt vervolgens de data ná enkele minuten bij je opgegeven email inbox.
+   Voorbeeld van configuratie in het script:
 
    ```javascript
    // Email van ontvanger
@@ -85,22 +86,23 @@ Houd er rekening mee dat de variabele exact als `OPENAI_API_KEY=""` genoteerd mo
    var endDate = new Date("2024-09-14"); // Formaat: JJJJ-MM-DD
    ```
 
-2. **ChatGPT model wijzigen (optioneel)**
-   Mocht je ooit het ChatGPT model willen wijzigen, dan kan dat in `server/server.js`.
+### Stap 2: ChatGPT-model wijzigen (optioneel)
 
-   ```javascript
-   const completion = await openai.chat.completions.create({
-     messages: [{ role: "user", content: message }],
-     model: "gpt-4o-mini",
-   });
-   ```
+Mocht het nodig zijn om het gebruikte ChatGPT-model te wijzigen, dan kan dit eenvoudig in de `server/server.js` door de modelnaam te aanpassen:
 
-3. **Server starten**
-   In de terminal, voer dit commando uit:
+```javascript
+const completion = await openai.chat.completions.create({
+  messages: [{ role: "user", content: message }],
+  model: "gpt-4o-mini",  // Dit kan worden aangepast naar een ander model
+});
+```
+
+### Stap 3: Server starten
+
+1. In de terminal, voer het volgende commando uit om de server te starten:
 
    ```bash
    node server/server.js
    ```
 
-4. **Chrome-extensie gebruiken**
-   Open de extensie en voer de bedrijfsnaam en CSV-data in. klik daarna op "Analyze uitvoeren", waarna je het rapport in minder dan één minuut ontvangt.
+2. De server draait nu lokaal, en de extensie kan worden gebruikt om de gewenste gegevens te verwerken en rapporten te genereren.
