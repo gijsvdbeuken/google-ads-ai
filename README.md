@@ -12,10 +12,6 @@ Voor dit project is het aan te raden om de volgende software te installeren:
 
 1. **Node.js** – Een JavaScript runtime-omgeving die nodig is om het project te draaien.  
    - Download het hier: [Node.js](https://nodejs.org/en/download/package-manager)
-
-2. **Git** – Een versiebeheersysteem voor het downloaden en beheren van de projectbestanden.  
-   - Download het hier: [Git](https://git-scm.com/downloads)
-
 3. **Visual Studio Code (optioneel maar aanbevolen)** – Een krachtige editor voor het bewerken van code.  
    - Download het hier: [Visual Studio Code](https://code.visualstudio.com/download)
 
